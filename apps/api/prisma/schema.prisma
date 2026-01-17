@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// USER & AUTH
+// ==========================================
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  memberships  Membership[]
+  auditLogs    AuditLog[]   @relation("AuditActor")
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique @db.VarChar(500)
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+// ==========================================
+// TENANT & MEMBERSHIP
+// ==========================================
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  memberships Membership[]
+  projects    Project[]
+  auditLogs   AuditLog[]
+
+  @@map("tenants")
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  ANALYST
+}
+
+model Membership {
+  id        String     @id @default(cuid())
+  userId    String     @map("user_id")
+  tenantId  String     @map("tenant_id")
+  role      MemberRole @default(ANALYST)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+  @@map("memberships")
+}
+
+// ==========================================
+// PROJECT & CONFIGURATION
+// ==========================================
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+model Project {
+  id            String        @id @default(cuid())
+  tenantId      String        @map("tenant_id")
+  name          String
+  domain        String
+  status        ProjectStatus @default(ACTIVE)
+  timezone      String        @default("America/Sao_Paulo")
+  retentionDays Int           @default(90) @map("retention_days")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  apiKeys         ApiKey[]
+  integrationMeta IntegrationMeta?
+  consentLogs     ConsentLog[]
+  errorLogs       ErrorLog[]
+  exportJobs      ExportJob[]
+
+  @@unique([tenantId, domain])
+  @@index([tenantId])
+  @@map("projects")
+}
+
+// ==========================================
+// API KEYS
+// ==========================================
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  projectId  String    @map("project_id")
+  name       String
+  keyHash    String    @unique @map("key_hash")
+  keyPrefix  String    @map("key_prefix") @db.VarChar(12)
+  secretHash String    @map("secret_hash")
+  scopes     Json      @default("[]")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  revokedAt  DateTime? @map("revoked_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([keyPrefix])
+  @@map("api_keys")
+}
+
+// ==========================================
+// INTEGRATIONS
+// ==========================================
+
+model IntegrationMeta {
+  id                   String   @id @default(cuid())
+  projectId            String   @unique @map("project_id")
+  pixelId              String   @map("pixel_id")
+  accessTokenEncrypted String   @map("access_token_encrypted") @db.Text
+  testEventCode        String?  @map("test_event_code")
+  enabled              Boolean  @default(true)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("integrations_meta")
+}
+
+// ==========================================
+// CONSENT & PRIVACY
+// ==========================================
+
+model ConsentLog {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  anonymousId String   @map("anonymous_id")
+  categories  Json
+  source      String   @default("sdk") // sdk, api, manual
+  ipHash      String?  @map("ip_hash")
+  userAgent   String?  @map("user_agent") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([anonymousId])
+  @@index([createdAt])
+  @@map("consent_logs")
+}
+
+// ==========================================
+// AUDIT & ERROR LOGS
+// ==========================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  actorUserId String?  @map("actor_user_id")
+  action      String
+  resource    String
+  resourceId  String?  @map("resource_id")
+  payload     Json?
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  actor  User?  @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([actorUserId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model ErrorLog {
+  id        String   @id @default(cuid())
+  projectId String   @map("project_id")
+  type      String   // validation, integration, processing
+  message   String   @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("error_logs")
+}
+
+// ==========================================
+// EXPORTS
+// ==========================================
+
+enum ExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ExportType {
+  EVENTS_RAW
+  EVENTS_AGG
+  FUNNEL
+  REVENUE
+}
+
+model ExportJob {
+  id         String       @id @default(cuid())
+  projectId  String       @map("project_id")
+  type       ExportType
+  status     ExportStatus @default(PENDING)
+  params     Json
+  fileUrl    String?      @map("file_url")
+  error      String?      @db.Text
+  createdAt  DateTime     @default(now()) @map("created_at")
+  finishedAt DateTime?    @map("finished_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("export_jobs")
+}
