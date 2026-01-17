@@ -9,6 +9,6 @@ import { EncryptionService } from './encryption.service';
   imports: [PrismaModule],
   controllers: [IntegrationsController],
   providers: [IntegrationsService, EncryptionService],
-  exports: [IntegrationsService],
+  exports: [IntegrationsService, EncryptionService],
 })
 export class IntegrationsModule {}

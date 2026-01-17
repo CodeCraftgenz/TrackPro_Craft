@@ -15,11 +15,11 @@ export class CreateProjectDto {
   @ApiProperty({ example: 'My E-commerce' })
   @IsString()
   @MinLength(2)
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 'myecommerce.com' })
   @IsString()
-  domain: string;
+  domain!: string;
 
   @ApiPropertyOptional({ example: 'America/Sao_Paulo' })
   @IsOptional()
@@ -68,7 +68,7 @@ export class CreateApiKeyDto {
   @ApiProperty({ example: 'Production Key' })
   @IsString()
   @MinLength(2)
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({ example: ['events:write', 'events:read'] })
   @IsOptional()

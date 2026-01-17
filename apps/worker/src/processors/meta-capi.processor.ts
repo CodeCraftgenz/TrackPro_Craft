@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
-import { Worker, Job } from 'bullmq';
+import { Worker, Job, ConnectionOptions } from 'bullmq';
 import IORedis from 'ioredis';
 
 import { MetaCapiService } from '../services/meta-capi.service';
@@ -33,7 +33,7 @@ interface MetaCapiJobData {
 @Injectable()
 export class MetaCapiProcessor implements OnModuleInit {
   private readonly logger = new Logger(MetaCapiProcessor.name);
-  private worker: Worker<MetaCapiJobData>;
+  private worker!: Worker<MetaCapiJobData>;
 
   constructor(
     @Inject(REDIS_CONNECTION) private readonly redis: IORedis,
@@ -48,7 +48,7 @@ export class MetaCapiProcessor implements OnModuleInit {
         return this.process(job);
       },
       {
-        connection: this.redis,
+        connection: this.redis as unknown as ConnectionOptions,
         concurrency: 10,
         limiter: {
           max: 100,

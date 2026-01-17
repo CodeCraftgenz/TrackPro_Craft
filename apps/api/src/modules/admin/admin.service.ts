@@ -1,11 +1,11 @@
 import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
-import { Queue } from 'bullmq';
+import { Queue, ConnectionOptions } from 'bullmq';
 import { MemberRole } from '@prisma/client';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../redis/redis.service';
 
-interface QueueStats {
+export interface QueueStats {
   name: string;
   waiting: number;
   active: number;
@@ -15,7 +15,7 @@ interface QueueStats {
   paused: boolean;
 }
 
-interface QueueJob {
+export interface QueueJob {
   id: string;
   name: string;
   data: Record<string, unknown>;
@@ -26,7 +26,7 @@ interface QueueJob {
   failedReason?: string;
 }
 
-interface AuditEntry {
+export interface AuditEntry {
   id: string;
   timestamp: string;
   userId: string;
@@ -36,7 +36,7 @@ interface AuditEntry {
   changes: Record<string, unknown> | null;
 }
 
-interface ErrorLogEntry {
+export interface ErrorLogEntry {
   id: string;
   timestamp: string;
   level: string;
@@ -62,7 +62,7 @@ export class AdminService {
   ) {
     // Initialize queues
     for (const name of this.QUEUE_NAMES) {
-      this.queues.set(name, new Queue(name, { connection: this.redis.getClient() }));
+      this.queues.set(name, new Queue(name, { connection: this.redis.getClient() as unknown as ConnectionOptions }));
     }
   }
 
@@ -130,7 +130,7 @@ export class AdminService {
       return [];
     }
 
-    let jobs;
+    let jobs: Awaited<ReturnType<Queue['getWaiting']>> = [];
     switch (status) {
       case 'waiting':
         jobs = await queue.getWaiting(0, limit - 1);
@@ -240,8 +240,8 @@ export class AdminService {
     const { limit = 50, offset = 0, userId, entity, action } = options;
 
     const where = {
-      ...(userId && { userId }),
-      ...(entity && { entity }),
+      ...(userId && { actorUserId: userId }),
+      ...(entity && { resource: entity }),
       ...(action && { action }),
     };
 
@@ -251,11 +251,6 @@ export class AdminService {
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
-        include: {
-          user: {
-            select: { email: true, name: true },
-          },
-        },
       }),
       this.prisma.auditLog.count({ where }),
     ]);
@@ -264,11 +259,11 @@ export class AdminService {
       logs: logs.map((log) => ({
         id: log.id,
         timestamp: log.createdAt.toISOString(),
-        userId: log.userId,
+        userId: log.actorUserId || '',
         action: log.action,
-        entity: log.entity,
-        entityId: log.entityId,
-        changes: log.changes as Record<string, unknown> | null,
+        entity: log.resource,
+        entityId: log.resourceId || '',
+        changes: log.payload as Record<string, unknown> | null,
       })),
       total,
     };
@@ -300,7 +295,7 @@ export class AdminService {
         timestamp: log.createdAt.toISOString(),
         level: 'error',
         message: log.action,
-        context: log.changes as Record<string, unknown> | null,
+        context: log.payload as Record<string, unknown> | null,
       })),
       total: logs.length,
     };

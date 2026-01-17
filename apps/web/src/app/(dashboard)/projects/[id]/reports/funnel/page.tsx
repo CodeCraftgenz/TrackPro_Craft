@@ -11,7 +11,6 @@ import {
   RefreshCw,
   BarChart3,
   Eye,
-  ChevronRight,
   ArrowDown,
   Target,
 } from 'lucide-react';
@@ -69,10 +68,10 @@ export default function FunnelReportPage() {
 
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
-    queryFn: () => get<{ data: Tenant[] }>('/api/v1/tenants'),
+    queryFn: () => get<Tenant[]>('/api/v1/tenants'),
   });
 
-  const tenantId = tenants?.data?.[0]?.id;
+  const tenantId = tenants?.[0]?.id;
 
   const {
     data: report,

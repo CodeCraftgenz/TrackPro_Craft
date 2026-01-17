@@ -5,7 +5,7 @@ import * as crypto from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateApiKeyDto } from './dto/projects.dto';
 
-interface GeneratedApiKey {
+export interface GeneratedApiKey {
   id: string;
   name: string;
   apiKey: string;

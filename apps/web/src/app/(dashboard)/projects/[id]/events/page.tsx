@@ -70,10 +70,10 @@ export default function ProjectEventsPage() {
 
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
-    queryFn: () => get<{ data: Tenant[] }>('/api/v1/tenants'),
+    queryFn: () => get<Tenant[]>('/api/v1/tenants'),
   });
 
-  const tenantId = tenants?.data?.[0]?.id;
+  const tenantId = tenants?.[0]?.id;
 
   const {
     data: eventsData,
@@ -135,13 +135,13 @@ export default function ProjectEventsPage() {
         <div className="flex items-center space-x-4">
           <Link
             href={`/projects/${projectId}`}
-            className="p-2 hover:bg-accent rounded-md transition-colors"
+            className="p-2 hover:bg-white/10 rounded-md transition-colors"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 text-white" />
           </Link>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Eventos</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-semibold tracking-tight text-white">Eventos</h1>
+            <p className="text-white/60">
               Visualize eventos em tempo real
             </p>
           </div>
@@ -149,7 +149,7 @@ export default function ProjectEventsPage() {
         <button
           onClick={() => refetch()}
           disabled={isFetching}
-          className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium hover:bg-accent disabled:opacity-50"
+          className="inline-flex items-center justify-center rounded-md border border-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/10 disabled:opacity-50"
         >
           <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
           Atualizar
@@ -159,24 +159,24 @@ export default function ProjectEventsPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
           <input
             type="text"
             placeholder="Buscar por URL, user_id, anonymous_id..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-10 w-full rounded-md border border-white/20 bg-white/5 pl-10 pr-3 py-2 text-sm text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
         <div className="relative">
-          <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
           <select
             value={eventFilter}
             onChange={(e) => {
               setEventFilter(e.target.value);
               setPage(0);
             }}
-            className="flex h-10 w-full sm:w-48 rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-10 w-full sm:w-48 rounded-md border border-white/20 bg-white/5 pl-10 pr-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <option value="">Todos os eventos</option>
             <option value="page_view">Page View</option>
@@ -191,51 +191,51 @@ export default function ProjectEventsPage() {
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Total de Eventos</p>
-          <p className="mt-1 text-2xl font-semibold">
+        <div className="rounded-lg border border-white/10 bg-transparent p-4">
+          <p className="text-sm text-white/60">Total de Eventos</p>
+          <p className="mt-1 text-2xl font-semibold text-white">
             {eventsData?.total.toLocaleString('pt-BR') || 0}
           </p>
         </div>
-        <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Exibindo</p>
-          <p className="mt-1 text-2xl font-semibold">
+        <div className="rounded-lg border border-white/10 bg-transparent p-4">
+          <p className="text-sm text-white/60">Exibindo</p>
+          <p className="mt-1 text-2xl font-semibold text-white">
             {filteredEvents?.length || 0} eventos
           </p>
         </div>
-        <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Página</p>
-          <p className="mt-1 text-2xl font-semibold">
+        <div className="rounded-lg border border-white/10 bg-transparent p-4">
+          <p className="text-sm text-white/60">Página</p>
+          <p className="mt-1 text-2xl font-semibold text-white">
             {page + 1} de {totalPages || 1}
           </p>
         </div>
       </div>
 
       {/* Events List */}
-      <div className="rounded-lg border bg-card">
+      <div className="rounded-lg border border-white/10 bg-transparent">
         {isLoading ? (
           <div className="p-8 flex flex-col items-center justify-center">
-            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="mt-4 text-sm text-muted-foreground">
+            <RefreshCw className="h-8 w-8 animate-spin text-white/60" />
+            <p className="mt-4 text-sm text-white/60">
               Carregando eventos...
             </p>
           </div>
         ) : filteredEvents?.length === 0 ? (
           <div className="p-8 flex flex-col items-center justify-center text-center">
-            <Activity className="h-12 w-12 text-muted-foreground/50" />
-            <h3 className="mt-4 font-semibold">Nenhum evento encontrado</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <Activity className="h-12 w-12 text-white/30" />
+            <h3 className="mt-4 font-semibold text-white">Nenhum evento encontrado</h3>
+            <p className="mt-2 text-sm text-white/60">
               {eventFilter || searchQuery
                 ? 'Tente ajustar os filtros'
                 : 'Eventos aparecerão aqui quando começarem a ser recebidos'}
             </p>
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="divide-y divide-white/10">
             {filteredEvents?.map((event) => (
               <div
                 key={event.event_id}
-                className="p-4 hover:bg-accent/50 transition-colors"
+                className="p-4 hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -246,17 +246,17 @@ export default function ProjectEventsPage() {
                         {event.event_name}
                       </span>
                       {event.value > 0 && (
-                        <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                        <span className="text-sm font-medium text-green-400">
                           {event.currency} {event.value.toFixed(2)}
                         </span>
                       )}
                     </div>
                     {event.url && (
-                      <p className="mt-2 text-sm text-muted-foreground truncate">
+                      <p className="mt-2 text-sm text-white/60 truncate">
                         {event.path || event.url}
                       </p>
                     )}
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/50">
                       {event.anonymous_id && (
                         <span>ID: {event.anonymous_id.slice(0, 8)}...</span>
                       )}
@@ -270,7 +270,7 @@ export default function ProjectEventsPage() {
                       {event.country && <span>{event.country}</span>}
                     </div>
                   </div>
-                  <div className="text-right text-xs text-muted-foreground whitespace-nowrap">
+                  <div className="text-right text-xs text-white/50 whitespace-nowrap">
                     <p>{formatTime(event.event_time)}</p>
                     {event.ip && <p className="mt-1">{event.ip}</p>}
                   </div>
@@ -282,22 +282,22 @@ export default function ProjectEventsPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t p-4">
+          <div className="flex items-center justify-between border-t border-white/10 p-4">
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="inline-flex items-center justify-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center rounded-md border border-white/20 px-3 py-2 text-sm font-medium text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="mr-1 h-4 w-4" />
               Anterior
             </button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-white/60">
               Página {page + 1} de {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="inline-flex items-center justify-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center rounded-md border border-white/20 px-3 py-2 text-sm font-medium text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Próxima
               <ChevronRight className="ml-1 h-4 w-4" />

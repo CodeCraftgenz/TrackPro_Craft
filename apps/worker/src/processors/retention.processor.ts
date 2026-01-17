@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
-import { Worker, Job, Queue } from 'bullmq';
+import { Worker, Job, Queue, ConnectionOptions } from 'bullmq';
 import IORedis from 'ioredis';
 
 import { ClickHouseService } from '../services/clickhouse.service';
@@ -14,7 +14,7 @@ interface RetentionJobData {
 @Injectable()
 export class RetentionProcessor implements OnModuleInit {
   private readonly logger = new Logger(RetentionProcessor.name);
-  private worker: Worker<RetentionJobData>;
+  private worker!: Worker<RetentionJobData>;
   private queue: Queue;
 
   constructor(
@@ -22,7 +22,7 @@ export class RetentionProcessor implements OnModuleInit {
     private readonly clickhouse: ClickHouseService,
     private readonly prisma: PrismaService,
   ) {
-    this.queue = new Queue('retention', { connection: this.redis });
+    this.queue = new Queue('retention', { connection: this.redis as unknown as ConnectionOptions });
   }
 
   onModuleInit() {
@@ -32,7 +32,7 @@ export class RetentionProcessor implements OnModuleInit {
         return this.process(job);
       },
       {
-        connection: this.redis,
+        connection: this.redis as unknown as ConnectionOptions,
         concurrency: 1, // Only process one at a time to avoid conflicts
       },
     );

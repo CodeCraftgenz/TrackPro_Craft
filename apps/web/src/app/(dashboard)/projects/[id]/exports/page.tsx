@@ -17,7 +17,6 @@ import {
   Filter,
   RefreshCw,
   AlertTriangle,
-  ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -108,10 +107,10 @@ export default function ExportsPage() {
 
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
-    queryFn: () => get<{ data: Tenant[] }>('/api/v1/tenants'),
+    queryFn: () => get<Tenant[]>('/api/v1/tenants'),
   });
 
-  const tenantId = tenants?.data?.[0]?.id;
+  const tenantId = tenants?.[0]?.id;
 
   const {
     data: exports,

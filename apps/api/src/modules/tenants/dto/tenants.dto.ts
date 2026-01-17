@@ -6,28 +6,28 @@ export class CreateTenantDto {
   @ApiProperty({ example: 'My Company' })
   @IsString()
   @MinLength(2)
-  name: string;
+  name!: string;
 }
 
 export class UpdateTenantDto {
   @ApiProperty({ example: 'My Company Updated' })
   @IsString()
   @MinLength(2)
-  name: string;
+  name!: string;
 }
 
 export class AddMemberDto {
   @ApiProperty({ example: 'newmember@example.com' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ enum: MemberRole, example: MemberRole.ANALYST })
   @IsEnum(MemberRole)
-  role: MemberRole;
+  role!: MemberRole;
 }
 
 export class UpdateMemberRoleDto {
   @ApiProperty({ enum: MemberRole, example: MemberRole.ADMIN })
   @IsEnum(MemberRole)
-  role: MemberRole;
+  role!: MemberRole;
 }

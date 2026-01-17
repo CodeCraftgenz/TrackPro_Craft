@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Queue } from 'bullmq';
+import { Queue, ConnectionOptions } from 'bullmq';
 import IORedis from 'ioredis';
 
 export interface MetaCapiJobData {
@@ -61,7 +61,7 @@ export class QueueService implements OnModuleDestroy {
     });
 
     this.metaCapiQueue = new Queue('meta-capi', {
-      connection: this.connection,
+      connection: this.connection as unknown as ConnectionOptions,
       defaultJobOptions: {
         attempts: 3,
         backoff: {
@@ -74,7 +74,7 @@ export class QueueService implements OnModuleDestroy {
     });
 
     this.aggregatesQueue = new Queue('aggregates', {
-      connection: this.connection,
+      connection: this.connection as unknown as ConnectionOptions,
       defaultJobOptions: {
         attempts: 2,
         removeOnComplete: 100,
@@ -83,7 +83,7 @@ export class QueueService implements OnModuleDestroy {
     });
 
     this.exportsQueue = new Queue('exports', {
-      connection: this.connection,
+      connection: this.connection as unknown as ConnectionOptions,
       defaultJobOptions: {
         attempts: 2,
         removeOnComplete: 50,
@@ -92,7 +92,7 @@ export class QueueService implements OnModuleDestroy {
     });
 
     this.retentionQueue = new Queue('retention', {
-      connection: this.connection,
+      connection: this.connection as unknown as ConnectionOptions,
       defaultJobOptions: {
         attempts: 2,
         removeOnComplete: 10,

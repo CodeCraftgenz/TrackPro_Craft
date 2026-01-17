@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Route } from 'next';
 
 export default function HomePage() {
   return (
@@ -9,13 +10,13 @@ export default function HomePage() {
             <span className="text-xl font-bold text-primary">TrackPro</span>
           </div>
           <nav className="hidden gap-6 md:flex">
-            <Link href="/features" className="text-sm font-medium text-muted-foreground hover:text-primary">
+            <Link href={"/#features" as Route} className="text-sm font-medium text-muted-foreground hover:text-primary">
               Features
             </Link>
-            <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-primary">
+            <Link href={"/#pricing" as Route} className="text-sm font-medium text-muted-foreground hover:text-primary">
               Pricing
             </Link>
-            <Link href="/blog" className="text-sm font-medium text-muted-foreground hover:text-primary">
+            <Link href={"/#blog" as Route} className="text-sm font-medium text-muted-foreground hover:text-primary">
               Blog
             </Link>
           </nav>
@@ -61,7 +62,7 @@ export default function HomePage() {
               Começar Agora
             </Link>
             <Link
-              href="/features"
+              href={"/#features" as Route}
               className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
             >
               Ver Features
@@ -102,10 +103,10 @@ export default function HomePage() {
             &copy; {new Date().getFullYear()} TrackPro. Todos os direitos reservados.
           </p>
           <div className="flex gap-4">
-            <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary">
+            <Link href={"/#privacy" as Route} className="text-sm text-muted-foreground hover:text-primary">
               Privacidade
             </Link>
-            <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary">
+            <Link href={"/#terms" as Route} className="text-sm text-muted-foreground hover:text-primary">
               Termos
             </Link>
           </div>

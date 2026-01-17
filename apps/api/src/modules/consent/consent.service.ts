@@ -13,7 +13,7 @@ import {
   ConsentCategories,
 } from './dto/consent.dto';
 
-interface ConsentSettings {
+export interface ConsentSettings {
   bannerEnabled: boolean;
   bannerPosition: 'bottom' | 'top' | 'center';
   bannerTheme: 'light' | 'dark' | 'auto';

@@ -15,6 +15,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
+import { Route } from 'next';
 
 import { useApi } from '@/hooks/use-api';
 
@@ -141,7 +142,7 @@ export default function AdminPage() {
           Audit Logs
         </Link>
         <Link
-          href="/admin/errors"
+          href={"/admin/errors" as Route}
           className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-accent"
         >
           <AlertTriangle className="h-4 w-4" />

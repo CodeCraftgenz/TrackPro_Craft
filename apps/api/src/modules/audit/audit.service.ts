@@ -28,7 +28,7 @@ export class AuditService {
           action: data.action,
           resource: data.resource,
           resourceId: data.resourceId,
-          payload: data.payload,
+          payload: data.payload as object | undefined,
           ipAddress: data.ipAddress,
           userAgent: data.userAgent,
         },

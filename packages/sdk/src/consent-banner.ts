@@ -1,4 +1,5 @@
 import type { ConsentCategories, ConsentCategory } from './types';
+// ConsentCategory is used in attachEventListeners
 
 export interface ConsentBannerConfig {
   position?: 'bottom' | 'top' | 'center';
@@ -81,7 +82,6 @@ const CONSENT_COOKIE = 'trackpro_consent';
 export class ConsentBanner {
   private config: Required<ConsentBannerConfig>;
   private container: HTMLElement | null = null;
-  private selectedCategories: Set<ConsentCategory> = new Set(['necessary']);
   private t: Translations;
 
   constructor(config: ConsentBannerConfig) {
@@ -275,12 +275,6 @@ export class ConsentBanner {
           secondary: '#f3f4f6',
           secondaryHover: '#e5e7eb',
         };
-
-    const positionStyles: Record<string, string> = {
-      bottom: 'bottom: 0; left: 0; right: 0;',
-      top: 'top: 0; left: 0; right: 0;',
-      center: 'top: 50%; left: 50%; transform: translate(-50%, -50%);',
-    };
 
     const style = document.createElement('style');
     style.textContent = `

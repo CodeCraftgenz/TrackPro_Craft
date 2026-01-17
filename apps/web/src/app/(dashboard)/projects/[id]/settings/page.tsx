@@ -9,8 +9,6 @@ import {
   Plus,
   Copy,
   Trash2,
-  Eye,
-  EyeOff,
   Loader2,
   AlertTriangle,
 } from 'lucide-react';
@@ -71,10 +69,10 @@ export default function ProjectSettingsPage() {
 
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
-    queryFn: () => get<{ data: Tenant[] }>('/api/v1/tenants'),
+    queryFn: () => get<Tenant[]>('/api/v1/tenants'),
   });
 
-  const tenantId = tenants?.data?.[0]?.id;
+  const tenantId = tenants?.[0]?.id;
 
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', tenantId, projectId],
@@ -175,8 +173,8 @@ export default function ProjectSettingsPage() {
   if (projectLoading || keysLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 animate-pulse rounded bg-muted" />
-        <div className="h-64 animate-pulse rounded-lg bg-muted" />
+        <div className="h-8 w-48 animate-pulse rounded bg-white/10" />
+        <div className="h-64 animate-pulse rounded-lg bg-white/10" />
       </div>
     );
   }
@@ -186,31 +184,31 @@ export default function ProjectSettingsPage() {
       <div className="flex items-center space-x-4">
         <Link
           href={`/projects/${projectId}`}
-          className="p-2 hover:bg-accent rounded-md transition-colors"
+          className="p-2 hover:bg-white/10 rounded-md transition-colors"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5 text-white" />
         </Link>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight text-white">
             Configurações
           </h1>
-          <p className="text-muted-foreground">{project?.name}</p>
+          <p className="text-white/60">{project?.name}</p>
         </div>
       </div>
 
       {/* Project Settings */}
-      <div className="rounded-lg border bg-card">
-        <div className="flex items-center justify-between border-b p-4">
+      <div className="rounded-lg border border-white/10 bg-transparent">
+        <div className="flex items-center justify-between border-b border-white/10 p-4">
           <div>
-            <h2 className="font-semibold">Informações do Projeto</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="font-semibold text-white">Informações do Projeto</h2>
+            <p className="text-sm text-white/60">
               Dados básicos do projeto
             </p>
           </div>
           {!editingProject && (
             <button
               onClick={handleStartEdit}
-              className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
+              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-md"
             >
               Editar
             </button>
@@ -220,13 +218,13 @@ export default function ProjectSettingsPage() {
           {editingProject ? (
             <form onSubmit={handleUpdateProject} className="space-y-4">
               {projectError && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                <div className="rounded-md bg-red-500/10 p-3 text-sm text-red-400">
                   {projectError}
                 </div>
               )}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label htmlFor="projectName" className="text-sm font-medium">
+                  <label htmlFor="projectName" className="text-sm font-medium text-white">
                     Nome
                   </label>
                   <input
@@ -236,12 +234,12 @@ export default function ProjectSettingsPage() {
                     onChange={(e) =>
                       setProjectForm({ ...projectForm, name: e.target.value })
                     }
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="projectDomain" className="text-sm font-medium">
+                  <label htmlFor="projectDomain" className="text-sm font-medium text-white">
                     Domínio
                   </label>
                   <input
@@ -251,7 +249,7 @@ export default function ProjectSettingsPage() {
                     onChange={(e) =>
                       setProjectForm({ ...projectForm, domain: e.target.value })
                     }
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white"
                     required
                   />
                 </div>
@@ -260,7 +258,7 @@ export default function ProjectSettingsPage() {
                 <button
                   type="button"
                   onClick={() => setEditingProject(false)}
-                  className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-md"
                 >
                   Cancelar
                 </button>
@@ -283,12 +281,12 @@ export default function ProjectSettingsPage() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-muted-foreground">Nome</p>
-                <p className="font-medium">{project?.name}</p>
+                <p className="text-sm text-white/60">Nome</p>
+                <p className="font-medium text-white">{project?.name}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Domínio</p>
-                <p className="font-medium">{project?.domain}</p>
+                <p className="text-sm text-white/60">Domínio</p>
+                <p className="font-medium text-white">{project?.domain}</p>
               </div>
             </div>
           )}
@@ -296,11 +294,11 @@ export default function ProjectSettingsPage() {
       </div>
 
       {/* API Keys */}
-      <div className="rounded-lg border bg-card">
-        <div className="flex items-center justify-between border-b p-4">
+      <div className="rounded-lg border border-white/10 bg-transparent">
+        <div className="flex items-center justify-between border-b border-white/10 p-4">
           <div>
-            <h2 className="font-semibold">API Keys</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="font-semibold text-white">API Keys</h2>
+            <p className="text-sm text-white/60">
               Gerencie as chaves de API do projeto
             </p>
           </div>
@@ -315,9 +313,9 @@ export default function ProjectSettingsPage() {
         <div className="p-4">
           {apiKeys?.data?.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Key className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 font-semibold">Nenhuma API Key</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <Key className="h-12 w-12 text-white/30" />
+              <h3 className="mt-4 font-semibold text-white">Nenhuma API Key</h3>
+              <p className="mt-2 text-sm text-white/60">
                 Crie uma API key para começar a enviar eventos
               </p>
             </div>
@@ -326,16 +324,16 @@ export default function ProjectSettingsPage() {
               {apiKeys?.data?.map((key) => (
                 <div
                   key={key.id}
-                  className="flex items-center justify-between rounded-md border p-4"
+                  className="flex items-center justify-between rounded-md border border-white/10 p-4"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                      <Key className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5">
+                      <Key className="h-5 w-5 text-white/60" />
                     </div>
                     <div>
-                      <p className="font-medium">{key.name}</p>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <code className="rounded bg-muted px-1">
+                      <p className="font-medium text-white">{key.name}</p>
+                      <div className="flex items-center space-x-2 text-sm text-white/60">
+                        <code className="rounded bg-white/5 px-1 text-white/80">
                           {key.keyPrefix}...
                         </code>
                         <span>•</span>
@@ -346,14 +344,14 @@ export default function ProjectSettingsPage() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-white/50">
                       {key.lastUsedAt
                         ? `Usado em ${new Date(key.lastUsedAt).toLocaleDateString('pt-BR')}`
                         : 'Nunca usado'}
                     </span>
                     <button
                       onClick={() => handleDeleteApiKey(key.id)}
-                      className="p-2 text-destructive hover:bg-destructive/10 rounded-md"
+                      className="p-2 text-red-400 hover:bg-red-500/10 rounded-md"
                       title="Revogar"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -368,22 +366,22 @@ export default function ProjectSettingsPage() {
 
       {/* Create API Key Modal */}
       {isCreateModalOpen && !newApiKey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-lg">
-            <h2 className="text-lg font-semibold">Criar Nova API Key</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="w-full max-w-md rounded-lg bg-[#1a1a2e] border border-white/10 p-6 shadow-lg">
+            <h2 className="text-lg font-semibold text-white">Criar Nova API Key</h2>
+            <p className="mt-1 text-sm text-white/60">
               A chave será exibida apenas uma vez
             </p>
 
             <form onSubmit={handleCreateApiKey} className="mt-6 space-y-4">
               {createError && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                <div className="rounded-md bg-red-500/10 p-3 text-sm text-red-400">
                   {createError}
                 </div>
               )}
 
               <div className="space-y-2">
-                <label htmlFor="keyName" className="text-sm font-medium">
+                <label htmlFor="keyName" className="text-sm font-medium text-white">
                   Nome da Key
                 </label>
                 <input
@@ -393,19 +391,19 @@ export default function ProjectSettingsPage() {
                   onChange={(e) =>
                     setCreateForm({ ...createForm, name: e.target.value })
                   }
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   placeholder="Produção, Desenvolvimento, etc."
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Permissões</label>
+                <label className="text-sm font-medium text-white">Permissões</label>
                 <div className="space-y-2">
                   {AVAILABLE_SCOPES.map((scope) => (
                     <label
                       key={scope.value}
-                      className="flex items-start space-x-3 rounded-md border p-3 cursor-pointer hover:bg-accent"
+                      className="flex items-start space-x-3 rounded-md border border-white/10 p-3 cursor-pointer hover:bg-white/5"
                     >
                       <input
                         type="checkbox"
@@ -414,8 +412,8 @@ export default function ProjectSettingsPage() {
                         className="mt-1"
                       />
                       <div>
-                        <p className="font-medium">{scope.label}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-medium text-white">{scope.label}</p>
+                        <p className="text-xs text-white/60">
                           {scope.description}
                         </p>
                       </div>
@@ -432,7 +430,7 @@ export default function ProjectSettingsPage() {
                     setCreateForm({ name: '', scopes: ['events:write'] });
                     setCreateError(null);
                   }}
-                  className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-md"
                 >
                   Cancelar
                 </button>
@@ -458,38 +456,38 @@ export default function ProjectSettingsPage() {
 
       {/* New API Key Display Modal */}
       {newApiKey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-lg">
-            <div className="flex items-center space-x-2 text-yellow-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="w-full max-w-md rounded-lg bg-[#1a1a2e] border border-white/10 p-6 shadow-lg">
+            <div className="flex items-center space-x-2 text-yellow-400">
               <AlertTriangle className="h-5 w-5" />
               <h2 className="text-lg font-semibold">Salve sua API Key</h2>
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-white/60">
               Esta chave não será exibida novamente. Copie e guarde em um local seguro.
             </p>
 
             <div className="mt-6 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Nome</label>
-                <p className="text-sm">{newApiKey.name}</p>
+                <label className="text-sm font-medium text-white">Nome</label>
+                <p className="text-sm text-white/80">{newApiKey.name}</p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">API Key</label>
+                <label className="text-sm font-medium text-white">API Key</label>
                 <div className="flex items-center space-x-2">
-                  <code className="flex-1 rounded-md bg-muted p-3 text-sm break-all">
+                  <code className="flex-1 rounded-md bg-[#0d0d1a] p-3 text-sm break-all text-white/90">
                     {newApiKey.key}
                   </code>
                   <button
                     onClick={handleCopyKey}
-                    className="p-2 hover:bg-accent rounded-md"
+                    className="p-2 hover:bg-white/10 rounded-md text-white"
                     title="Copiar"
                   >
                     <Copy className="h-4 w-4" />
                   </button>
                 </div>
                 {copiedKey && (
-                  <p className="text-xs text-green-600">Copiado!</p>
+                  <p className="text-xs text-green-400">Copiado!</p>
                 )}
               </div>
             </div>

@@ -18,8 +18,6 @@ import { IntegrationsService } from './integrations.service';
 import {
   createMetaIntegrationSchema,
   updateMetaIntegrationSchema,
-  CreateMetaIntegrationDto,
-  UpdateMetaIntegrationDto,
 } from './dto/integrations.dto';
 
 interface AuthRequest {

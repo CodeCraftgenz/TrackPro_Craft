@@ -11,7 +11,6 @@ import { ClickHouseService } from '../analytics/clickhouse.service';
 import {
   DeleteUserDataDto,
   AnonymizeUserDataDto,
-  ExportUserDataDto,
 } from './dto/privacy.dto';
 
 export interface PrivacyRequestLog {

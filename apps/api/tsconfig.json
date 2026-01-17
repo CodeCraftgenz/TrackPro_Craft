@@ -1,6 +1,8 @@
 {
   "extends": "@trackpro/tsconfig/nestjs.json",
   "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],

@@ -1,5 +1,12 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: TrackPro SaaS platform - Sprint 1-6 complete\n\nComplete implementation of first-party tracking SaaS platform with:\n\n- Monorepo structure \\(Turborepo + pnpm\\)\n- NestJS API with JWT authentication and RBAC\n- Next.js 15 dashboard with App Router\n- High-performance ingest service \\(Fastify\\)\n- Background workers \\(BullMQ\\)\n- Prisma ORM + MySQL for core data\n- ClickHouse for analytics/events\n- Redis for caching and queues\n\nFeatures implemented:\n- Multi-tenant architecture\n- Event tracking and collection\n- Meta CAPI integration\n- Analytics dashboard with charts\n- LGPD/Privacy compliance \\(consent, retention, anonymization\\)\n- Data exports \\(CSV, JSON, Parquet\\)\n- Admin panel \\(queues, audit logs\\)\n- Observability \\(structured logs, health checks, metrics\\)\n- Security hardening \\(Helmet, CORS, rate limiting\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(npm run start:dev:*)",
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\ricardo.moretti\\\\OneDrive - Tracbel\\\\Área de Trabalho\\\\Projeto sass\\\\apps\\\\web\\\\src\\\\app\\\\app\")"
+    ],
     "additionalDirectories": [
       "c:\\Users\\ricardo.moretti\\OneDrive - Tracbel\\Área de Trabalho\\Projeto sass\\apps\\web\\src\\app\\(dashboard)\\projects\\[id]"
     ]

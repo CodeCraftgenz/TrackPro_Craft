@@ -19,6 +19,7 @@ import { ConsentModule } from './modules/consent/consent.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { PrivacyModule } from './modules/privacy/privacy.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { LeadsModule } from './modules/leads/leads.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { AdminModule } from './modules/admin/admin.module';
     ReportsModule,
     PrivacyModule,
     AdminModule,
+    LeadsModule,
   ],
   providers: [
     {

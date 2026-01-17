@@ -43,7 +43,7 @@ export class ReportsCacheService {
     return `${projectId}:${reportType}:${paramStr}`;
   }
 
-  getTtlForPeriod(startDate?: string, endDate?: string): number {
+  getTtlForPeriod(_startDate?: string, endDate?: string): number {
     // If dates are in the past (completed period), cache longer
     const now = new Date();
     const end = endDate ? new Date(endDate) : now;

@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
-import { Queue } from 'bullmq';
+import { Queue, ConnectionOptions } from 'bullmq';
 import IORedis from 'ioredis';
 
 import { PrismaService } from './prisma.service';
@@ -15,8 +15,8 @@ export class SchedulerService implements OnModuleInit {
     @Inject(REDIS_CONNECTION) private readonly redis: IORedis,
     private readonly prisma: PrismaService,
   ) {
-    this.retentionQueue = new Queue('retention', { connection: this.redis });
-    this.aggregatesQueue = new Queue('aggregates', { connection: this.redis });
+    this.retentionQueue = new Queue('retention', { connection: this.redis as unknown as ConnectionOptions });
+    this.aggregatesQueue = new Queue('aggregates', { connection: this.redis as unknown as ConnectionOptions });
   }
 
   async onModuleInit() {

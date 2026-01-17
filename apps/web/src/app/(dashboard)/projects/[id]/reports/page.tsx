@@ -47,10 +47,10 @@ export default function ReportsOverviewPage() {
 
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
-    queryFn: () => get<{ data: Tenant[] }>('/api/v1/tenants'),
+    queryFn: () => get<Tenant[]>('/api/v1/tenants'),
   });
 
-  const tenantId = tenants?.data?.[0]?.id;
+  const tenantId = tenants?.[0]?.id;
 
   const {
     data: report,
@@ -266,7 +266,7 @@ export default function ReportsOverviewPage() {
           <div className="rounded-lg border bg-card p-6">
             <h3 className="font-semibold">Top Eventos</h3>
             <div className="mt-4 space-y-3">
-              {report?.topEvents?.map((event, index) => {
+              {report?.topEvents?.map((event) => {
                 const maxCount = report.topEvents[0]?.count || 1;
                 const percentage = (event.count / maxCount) * 100;
 

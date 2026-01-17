@@ -78,8 +78,8 @@ export class EventsService {
               externalId: event.user_id,
               clientIpAddress: clientIp,
               clientUserAgent: event.user_agent,
-              fbp: event.payload?.fbp,
-              fbc: event.payload?.fbc,
+              fbp: event.payload?.fbp as string | undefined,
+              fbc: event.payload?.fbc as string | undefined,
             },
             customData: {
               value: event.value,

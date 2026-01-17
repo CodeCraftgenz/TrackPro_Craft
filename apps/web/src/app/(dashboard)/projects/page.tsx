@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, FolderKanban, MoreVertical, Trash2, Settings, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -31,15 +31,34 @@ export default function ProjectsPage() {
 
   const { data: tenants, isLoading: tenantsLoading } = useQuery({
     queryKey: ['tenants'],
-    queryFn: () => get<{ data: Tenant[] }>('/api/v1/tenants'),
+    queryFn: () => get<Tenant[]>('/api/v1/tenants'),
   });
 
-  const tenantId = tenants?.data?.[0]?.id;
+  const tenantId = tenants?.[0]?.id;
+
+  // Auto-create tenant if user doesn't have one
+  const createTenantMutation = useMutation({
+    mutationFn: (name: string) =>
+      post<Tenant>('/api/v1/tenants', { name }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+    },
+  });
+
+  // Check if we need to create a tenant
+  const needsTenant = !tenantsLoading && (!tenants || tenants.length === 0);
+
+  // Auto-create tenant on first load if needed
+  useEffect(() => {
+    if (needsTenant && !createTenantMutation.isPending && !createTenantMutation.isSuccess) {
+      createTenantMutation.mutate('Minha Empresa');
+    }
+  }, [needsTenant, createTenantMutation]);
 
   const { data: projects, isLoading: projectsLoading } = useQuery({
     queryKey: ['projects', tenantId],
     queryFn: () =>
-      get<{ data: Project[] }>(`/api/v1/tenants/${tenantId}/projects`),
+      get<Project[]>(`/api/v1/tenants/${tenantId}/projects`),
     enabled: !!tenantId,
   });
 
@@ -84,8 +103,8 @@ export default function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Projetos</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-white">Projetos</h1>
+          <p className="text-white/60">
             Gerencie seus projetos de tracking
           </p>
         </div>
@@ -104,11 +123,11 @@ export default function ProjectsPage() {
             <div key={i} className="h-40 animate-pulse rounded-lg bg-muted" />
           ))}
         </div>
-      ) : projects?.data?.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12">
-          <FolderKanban className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-lg font-semibold">Nenhum projeto</h3>
-          <p className="mt-2 text-sm text-muted-foreground text-center">
+      ) : !projects || projects.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-white/10 border-dashed p-12">
+          <FolderKanban className="h-12 w-12 text-white/30" />
+          <h3 className="mt-4 text-lg font-semibold text-white">Nenhum projeto</h3>
+          <p className="mt-2 text-sm text-white/60 text-center">
             Você ainda não tem nenhum projeto.
             <br />
             Crie um para começar a rastrear eventos.
@@ -123,34 +142,34 @@ export default function ProjectsPage() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects?.data?.map((project) => (
+          {projects?.map((project) => (
             <div
               key={project.id}
-              className="relative rounded-lg border bg-card hover:shadow-md transition-shadow"
+              className="relative rounded-lg border border-white/10 bg-transparent hover:bg-white/5 transition-all"
             >
               <Link href={`/projects/${project.id}`} className="block p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
                       <FolderKanban className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">{project.name}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="font-semibold text-white">{project.name}</h3>
+                      <p className="text-sm text-white/60">
                         {project.domain}
                       </p>
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 flex items-center space-x-4 text-xs text-muted-foreground">
+                <div className="mt-4 flex items-center space-x-4 text-xs text-white/50">
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-1 ${
-                      project.status === 'active'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                      project.status === 'ACTIVE'
+                        ? 'bg-green-900/30 text-green-400'
+                        : 'bg-yellow-900/30 text-yellow-400'
                     }`}
                   >
-                    {project.status === 'active' ? 'Ativo' : 'Inativo'}
+                    {project.status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
                   </span>
                   <span>
                     Criado em{' '}
@@ -166,16 +185,16 @@ export default function ProjectsPage() {
                     e.preventDefault();
                     setOpenMenuId(openMenuId === project.id ? null : project.id);
                   }}
-                  className="p-1 hover:bg-accent rounded-md"
+                  className="p-1 hover:bg-white/10 rounded-md"
                 >
-                  <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                  <MoreVertical className="h-4 w-4 text-white/60" />
                 </button>
 
                 {openMenuId === project.id && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-md border bg-card shadow-lg z-10">
+                  <div className="absolute right-0 mt-2 w-48 rounded-md border border-white/10 bg-[#1a1a2e] shadow-lg z-10">
                     <Link
                       href={`/projects/${project.id}/settings`}
-                      className="flex items-center space-x-2 px-4 py-2 text-sm hover:bg-accent"
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-white hover:bg-white/10"
                       onClick={() => setOpenMenuId(null)}
                     >
                       <Settings className="h-4 w-4" />
@@ -183,7 +202,7 @@ export default function ProjectsPage() {
                     </Link>
                     <button
                       onClick={() => handleDeleteProject(project.id)}
-                      className="flex w-full items-center space-x-2 px-4 py-2 text-sm text-destructive hover:bg-accent"
+                      className="flex w-full items-center space-x-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10"
                     >
                       <Trash2 className="h-4 w-4" />
                       <span>Excluir</span>
@@ -198,22 +217,22 @@ export default function ProjectsPage() {
 
       {/* Create Project Modal */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-lg">
-            <h2 className="text-lg font-semibold">Criar Novo Projeto</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="w-full max-w-md rounded-lg bg-[#1a1a2e] border border-white/10 p-6 shadow-lg">
+            <h2 className="text-lg font-semibold text-white">Criar Novo Projeto</h2>
+            <p className="mt-1 text-sm text-white/60">
               Configure um novo projeto de tracking para seu site
             </p>
 
             <form onSubmit={handleCreateProject} className="mt-6 space-y-4">
               {createError && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                <div className="rounded-md bg-red-500/10 p-3 text-sm text-red-400">
                   {createError}
                 </div>
               )}
 
               <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium">
+                <label htmlFor="name" className="text-sm font-medium text-white">
                   Nome do Projeto
                 </label>
                 <input
@@ -223,14 +242,14 @@ export default function ProjectsPage() {
                   onChange={(e) =>
                     setCreateForm({ ...createForm, name: e.target.value })
                   }
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex h-10 w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   placeholder="Meu Site"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="domain" className="text-sm font-medium">
+                <label htmlFor="domain" className="text-sm font-medium text-white">
                   Domínio
                 </label>
                 <input
@@ -240,7 +259,7 @@ export default function ProjectsPage() {
                   onChange={(e) =>
                     setCreateForm({ ...createForm, domain: e.target.value })
                   }
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex h-10 w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   placeholder="meusite.com.br"
                   required
                 />
@@ -254,7 +273,7 @@ export default function ProjectsPage() {
                     setCreateForm({ name: '', domain: '' });
                     setCreateError(null);
                   }}
-                  className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-md"
                 >
                   Cancelar
                 </button>

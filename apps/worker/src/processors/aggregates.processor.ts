@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
-import { Worker, Job } from 'bullmq';
+import { Worker, Job, ConnectionOptions } from 'bullmq';
 import IORedis from 'ioredis';
 
 import { ClickHouseService } from '../services/clickhouse.service';
@@ -13,7 +13,7 @@ interface AggregateJobData {
 @Injectable()
 export class AggregatesProcessor implements OnModuleInit {
   private readonly logger = new Logger(AggregatesProcessor.name);
-  private worker: Worker<AggregateJobData>;
+  private worker!: Worker<AggregateJobData>;
 
   constructor(
     @Inject(REDIS_CONNECTION) private readonly redis: IORedis,
@@ -27,7 +27,7 @@ export class AggregatesProcessor implements OnModuleInit {
         return this.process(job);
       },
       {
-        connection: this.redis,
+        connection: this.redis as unknown as ConnectionOptions,
         concurrency: 5,
       },
     );

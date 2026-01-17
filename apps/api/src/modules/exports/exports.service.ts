@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { MemberRole, ExportType, ExportStatus } from '@prisma/client';
-import { Queue } from 'bullmq';
+import { Queue, ConnectionOptions } from 'bullmq';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../redis/redis.service';
@@ -21,7 +21,7 @@ export class ExportsService {
     private readonly redis: RedisService,
   ) {
     this.exportsQueue = new Queue('exports', {
-      connection: this.redis.getClient(),
+      connection: this.redis.getClient() as unknown as ConnectionOptions,
     });
   }
 

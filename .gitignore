@@ -9,6 +9,16 @@ dist
 out
 build
 
+# TypeScript compiled files in src directories (monorepo)
+apps/*/src/**/*.js
+apps/*/src/**/*.js.map
+apps/*/src/**/*.d.ts
+apps/*/src/**/*.d.ts.map
+apps/*/prisma/*.js
+apps/*/prisma/*.js.map
+apps/*/prisma/*.d.ts
+apps/*/prisma/*.d.ts.map
+
 # Environment
 .env
 .env.local

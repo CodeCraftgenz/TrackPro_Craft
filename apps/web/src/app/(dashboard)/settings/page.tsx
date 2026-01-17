@@ -62,10 +62,10 @@ export default function SettingsPage() {
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ['tenants'],
-    queryFn: () => get<{ data: Tenant[] }>('/api/v1/tenants'),
+    queryFn: () => get<Tenant[]>('/api/v1/tenants'),
   });
 
-  const tenant = tenants?.data?.[0];
+  const tenant = tenants?.[0];
 
   const updateTenantMutation = useMutation({
     mutationFn: (data: { name: string }) =>
@@ -143,20 +143,20 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Configurações</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-semibold tracking-tight text-white">Configurações</h1>
+        <p className="text-white/60">
           Gerencie seu workspace e membros
         </p>
       </div>
 
       {/* Workspace Settings */}
-      <div className="rounded-lg border bg-card">
-        <div className="flex items-center justify-between border-b p-4">
+      <div className="rounded-lg border border-white/10 bg-transparent">
+        <div className="flex items-center justify-between border-b border-white/10 p-4">
           <div className="flex items-center space-x-3">
-            <Building2 className="h-5 w-5 text-muted-foreground" />
+            <Building2 className="h-5 w-5 text-white/70" />
             <div>
-              <h2 className="font-semibold">Workspace</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 className="font-semibold text-white">Workspace</h2>
+              <p className="text-sm text-white/60">
                 Informações do seu workspace
               </p>
             </div>
@@ -164,7 +164,7 @@ export default function SettingsPage() {
           {isOwner && !editingTenant && (
             <button
               onClick={handleStartEdit}
-              className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
+              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-md"
             >
               Editar
             </button>
@@ -179,7 +179,7 @@ export default function SettingsPage() {
                 </div>
               )}
               <div className="space-y-2">
-                <label htmlFor="tenantName" className="text-sm font-medium">
+                <label htmlFor="tenantName" className="text-sm font-medium text-white">
                   Nome do Workspace
                 </label>
                 <input
@@ -189,7 +189,7 @@ export default function SettingsPage() {
                   onChange={(e) =>
                     setTenantForm({ ...tenantForm, name: e.target.value })
                   }
-                  className="flex h-10 w-full max-w-md rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full max-w-md rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white"
                   required
                 />
               </div>
@@ -197,7 +197,7 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setEditingTenant(false)}
-                  className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-md"
                 >
                   Cancelar
                 </button>
@@ -220,16 +220,16 @@ export default function SettingsPage() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <p className="text-sm text-muted-foreground">Nome</p>
-                <p className="font-medium">{tenant?.name}</p>
+                <p className="text-sm text-white/60">Nome</p>
+                <p className="font-medium text-white">{tenant?.name}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Slug</p>
-                <p className="font-medium">{tenant?.slug}</p>
+                <p className="text-sm text-white/60">Slug</p>
+                <p className="font-medium text-white">{tenant?.slug}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Plano</p>
-                <p className="font-medium capitalize">{tenant?.plan || 'Free'}</p>
+                <p className="text-sm text-white/60">Plano</p>
+                <p className="font-medium text-white capitalize">{tenant?.plan || 'Free'}</p>
               </div>
             </div>
           )}
@@ -237,13 +237,13 @@ export default function SettingsPage() {
       </div>
 
       {/* Members */}
-      <div className="rounded-lg border bg-card">
-        <div className="flex items-center justify-between border-b p-4">
+      <div className="rounded-lg border border-white/10 bg-transparent">
+        <div className="flex items-center justify-between border-b border-white/10 p-4">
           <div className="flex items-center space-x-3">
-            <Users className="h-5 w-5 text-muted-foreground" />
+            <Users className="h-5 w-5 text-white/70" />
             <div>
-              <h2 className="font-semibold">Membros</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 className="font-semibold text-white">Membros</h2>
+              <p className="text-sm text-white/60">
                 {tenant?.memberships?.length || 0} membro(s)
               </p>
             </div>
@@ -260,60 +260,66 @@ export default function SettingsPage() {
         </div>
         <div className="p-4">
           <div className="space-y-3">
-            {tenant?.memberships?.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center justify-between rounded-md border p-4"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                    {member.user.name?.charAt(0).toUpperCase() || 'U'}
+            {tenant?.memberships?.map((member) => {
+              const memberName = member.user?.name || 'Usuário';
+              const memberEmail = member.user?.email || '';
+              const memberInitial = memberName.charAt(0).toUpperCase();
+
+              return (
+                <div
+                  key={member.id}
+                  className="flex items-center justify-between rounded-md border border-white/10 bg-white/5 p-4"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                      {memberInitial}
+                    </div>
+                    <div>
+                      <p className="font-medium text-white">
+                        {memberName}
+                        {member.userId === user?.id && (
+                          <span className="ml-2 text-xs text-white/50">
+                            (você)
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-sm text-white/60">
+                        {memberEmail}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">
-                      {member.user.name}
-                      {member.userId === user?.id && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          (você)
-                        </span>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Shield className="h-4 w-4 text-white/60" />
+                      <span className="text-sm text-white/80">{ROLE_LABELS[member.role] || member.role}</span>
+                    </div>
+                    {isAdmin &&
+                      member.userId !== user?.id &&
+                      member.role !== 'owner' && (
+                        <button
+                          onClick={() =>
+                            handleRemoveMember(member.userId, memberName)
+                          }
+                          className="p-2 text-red-400 hover:bg-red-500/10 rounded-md"
+                          title="Remover"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       )}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {member.user.email}
-                    </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{ROLE_LABELS[member.role]}</span>
-                  </div>
-                  {isAdmin &&
-                    member.userId !== user?.id &&
-                    member.role !== 'owner' && (
-                      <button
-                        onClick={() =>
-                          handleRemoveMember(member.userId, member.user.name)
-                        }
-                        className="p-2 text-destructive hover:bg-destructive/10 rounded-md"
-                        title="Remover"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Invite Member Modal */}
       {isInviteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-lg">
-            <h2 className="text-lg font-semibold">Convidar Membro</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="w-full max-w-md rounded-lg bg-[#1a1a2e] border border-white/10 p-6 shadow-lg">
+            <h2 className="text-lg font-semibold text-white">Convidar Membro</h2>
+            <p className="mt-1 text-sm text-white/60">
               Adicione um novo membro ao workspace
             </p>
 
@@ -325,11 +331,11 @@ export default function SettingsPage() {
               )}
 
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
+                <label htmlFor="email" className="text-sm font-medium text-white">
                   Email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
                   <input
                     id="email"
                     type="email"
@@ -337,7 +343,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setInviteForm({ ...inviteForm, email: e.target.value })
                     }
-                    className="flex h-10 w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-md border border-white/20 bg-white/5 pl-10 pr-3 py-2 text-sm text-white placeholder:text-white/40"
                     placeholder="email@exemplo.com"
                     required
                   />
@@ -345,13 +351,13 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Função</label>
+                <label className="text-sm font-medium text-white">Função</label>
                 <div className="space-y-2">
                   {(['admin', 'analyst'] as const).map((role) => (
                     <label
                       key={role}
-                      className={`flex items-start space-x-3 rounded-md border p-3 cursor-pointer hover:bg-accent ${
-                        inviteForm.role === role ? 'border-primary' : ''
+                      className={`flex items-start space-x-3 rounded-md border border-white/20 p-3 cursor-pointer hover:bg-white/10 ${
+                        inviteForm.role === role ? 'border-primary bg-white/5' : ''
                       }`}
                     >
                       <input
@@ -365,8 +371,8 @@ export default function SettingsPage() {
                         className="mt-1"
                       />
                       <div>
-                        <p className="font-medium">{ROLE_LABELS[role]}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-medium text-white">{ROLE_LABELS[role]}</p>
+                        <p className="text-xs text-white/60">
                           {ROLE_DESCRIPTIONS[role]}
                         </p>
                       </div>
@@ -383,7 +389,7 @@ export default function SettingsPage() {
                     setInviteForm({ email: '', role: 'analyst' });
                     setInviteError(null);
                   }}
-                  className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-md"
                 >
                   Cancelar
                 </button>

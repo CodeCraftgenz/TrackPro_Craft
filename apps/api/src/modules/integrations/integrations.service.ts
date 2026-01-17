@@ -177,14 +177,14 @@ export class IntegrationsService {
       );
 
       if (!response.ok) {
-        const error = await response.json();
+        const errorResponse = await response.json() as { error?: { message?: string } };
         return {
           success: false,
-          error: error.error?.message || 'Failed to connect to Meta API',
+          error: errorResponse.error?.message || 'Failed to connect to Meta API',
         };
       }
 
-      const data = await response.json();
+      const data = await response.json() as { name: string; id: string };
 
       return {
         success: true,

@@ -20,7 +20,7 @@ interface TokenPayload {
   role?: string;
 }
 
-interface AuthTokens {
+export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
@@ -170,5 +170,47 @@ export class AuthService {
 
   async validateUser(payload: TokenPayload) {
     return this.usersService.findById(payload.sub);
+  }
+
+  async validateOAuthLogin(profile: {
+    provider: string;
+    providerId: string;
+    email: string;
+    name: string;
+    picture?: string;
+  }): Promise<AuthTokens> {
+    if (!profile.email) {
+      throw new BadRequestException('Email not provided by OAuth provider');
+    }
+
+    // Check if user exists
+    let user = await this.prisma.user.findUnique({
+      where: { email: profile.email },
+    });
+
+    if (!user) {
+      // Create new user from OAuth
+      user = await this.prisma.user.create({
+        data: {
+          email: profile.email,
+          name: profile.name || profile.email.split('@')[0],
+          passwordHash: '', // OAuth users don't have passwords
+          avatarUrl: profile.picture,
+        },
+      });
+
+      this.logger.log(`User registered via ${profile.provider}: ${user.email}`);
+    } else {
+      // Update avatar if not set
+      if (!user.avatarUrl && profile.picture) {
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { avatarUrl: profile.picture },
+        });
+      }
+      this.logger.log(`User logged in via ${profile.provider}: ${user.email}`);
+    }
+
+    return this.generateTokens(user.id, user.email);
   }
 }

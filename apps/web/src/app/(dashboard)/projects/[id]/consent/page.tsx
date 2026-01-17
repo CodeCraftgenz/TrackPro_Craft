@@ -17,8 +17,6 @@ import {
   ChevronLeft,
   ChevronRight,
   BarChart3,
-  Eye,
-  Loader2,
   AlertTriangle,
   ExternalLink,
 } from 'lucide-react';
@@ -95,10 +93,10 @@ export default function ConsentPage() {
 
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
-    queryFn: () => get<{ data: Tenant[] }>('/api/v1/tenants'),
+    queryFn: () => get<Tenant[]>('/api/v1/tenants'),
   });
 
-  const tenantId = tenants?.data?.[0]?.id;
+  const tenantId = tenants?.[0]?.id;
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['consent-stats', tenantId, projectId],
@@ -151,6 +149,12 @@ export default function ConsentPage() {
   });
 
   const totalPages = logsData ? Math.ceil(logsData.total / limit) : 0;
+
+  const defaultCategoriesConfig = {
+    analytics: { enabled: true, description: 'Cookies de análise' },
+    marketing: { enabled: true, description: 'Cookies de marketing' },
+    personalization: { enabled: true, description: 'Cookies de personalização' },
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('pt-BR', {
@@ -636,19 +640,19 @@ export default function ConsentPage() {
                           </p>
                         </div>
                         <button
-                          onClick={() =>
+                          onClick={() => {
+                            const currentConfig = settings?.categoriesConfig ?? defaultCategoriesConfig;
+                            const categoryKey = category.key as keyof typeof currentConfig;
                             updateSettingsMutation.mutate({
                               categoriesConfig: {
-                                ...settings?.categoriesConfig,
-                                [category.key]: {
-                                  ...settings?.categoriesConfig?.[
-                                    category.key as keyof typeof settings.categoriesConfig
-                                  ],
+                                ...currentConfig,
+                                [categoryKey]: {
+                                  ...currentConfig[categoryKey],
                                   enabled: !isEnabled,
                                 },
                               },
-                            })
-                          }
+                            });
+                          }}
                           disabled={updateSettingsMutation.isPending}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                             isEnabled ? 'bg-primary' : 'bg-muted'

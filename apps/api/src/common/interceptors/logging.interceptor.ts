@@ -63,8 +63,8 @@ export class LoggingInterceptor implements NestInterceptor {
       method,
       path: originalUrl,
       userId,
-      tenantId,
-      projectId,
+      tenantId: typeof tenantId === 'string' ? tenantId : undefined,
+      projectId: typeof projectId === 'string' ? projectId : undefined,
       ip: ip || undefined,
       userAgent,
     };

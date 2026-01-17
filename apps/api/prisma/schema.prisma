@@ -103,12 +103,15 @@ model Project {
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
 
-  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  apiKeys         ApiKey[]
-  integrationMeta IntegrationMeta?
-  consentLogs     ConsentLog[]
-  errorLogs       ErrorLog[]
-  exportJobs      ExportJob[]
+  tenant                  Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  apiKeys                 ApiKey[]
+  integrationMeta         IntegrationMeta?
+  consentLogs             ConsentLog[]
+  errorLogs               ErrorLog[]
+  exportJobs              ExportJob[]
+  leadIntegrations        LeadIntegration[]
+  leadFormConfigs         LeadFormConfig[]
+  leadNotificationConfigs LeadNotificationConfig[]
 
   @@unique([tenantId, domain])
   @@index([tenantId])
@@ -219,6 +222,85 @@ model ErrorLog {
   @@index([type])
   @@index([createdAt])
   @@map("error_logs")
+}
+
+// ==========================================
+// LEAD CAPTURE INTEGRATIONS
+// ==========================================
+
+enum LeadPlatform {
+  FACEBOOK
+  INSTAGRAM
+  TWITTER
+  WEBSITE
+}
+
+enum LeadIntegrationStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+  ERROR
+}
+
+model LeadIntegration {
+  id                    String                @id @default(cuid())
+  projectId             String                @map("project_id")
+  platform              LeadPlatform
+  status                LeadIntegrationStatus @default(PENDING)
+  accessTokenEncrypted  String?               @map("access_token_encrypted") @db.Text
+  refreshTokenEncrypted String?               @map("refresh_token_encrypted") @db.Text
+  tokenExpiresAt        DateTime?             @map("token_expires_at")
+  pageId                String?               @map("page_id")
+  pageName              String?               @map("page_name")
+  formIds               Json?                 @map("form_ids")
+  webhookSecret         String?               @map("webhook_secret")
+  lastSyncAt            DateTime?             @map("last_sync_at")
+  errorMessage          String?               @map("error_message") @db.Text
+  metadata              Json?
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, platform])
+  @@index([projectId])
+  @@index([platform])
+  @@map("lead_integrations")
+}
+
+model LeadFormConfig {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  name        String
+  fields      Json
+  styling     Json?
+  submitUrl   String?  @map("submit_url")
+  redirectUrl String?  @map("redirect_url")
+  enabled     Boolean  @default(true)
+  embedCode   String   @map("embed_code") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("lead_form_configs")
+}
+
+model LeadNotificationConfig {
+  id         String   @id @default(cuid())
+  projectId  String   @map("project_id")
+  email      String?
+  webhookUrl String?  @map("webhook_url")
+  platforms  Json
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("lead_notification_configs")
 }
 
 // ==========================================

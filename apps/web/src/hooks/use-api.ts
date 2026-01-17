@@ -46,6 +46,15 @@ export function useApi() {
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+
+        // Handle expired/invalid token - redirect to login
+        if (response.status === 401) {
+          localStorage.removeItem(STORAGE_KEY);
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
+        }
+
         throw new Error(error.message || `Request failed: ${response.status}`);
       }
 
@@ -82,7 +91,11 @@ export function useApi() {
   );
 
   const del = useCallback(
-    <T>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
+    <T>(endpoint: string, data?: unknown) =>
+      request<T>(endpoint, {
+        method: 'DELETE',
+        body: data ? JSON.stringify(data) : undefined,
+      }),
     [request],
   );
 

@@ -86,7 +86,7 @@ export class StorageService {
   private async uploadToS3(
     key: string,
     content: Buffer | string,
-    options: UploadOptions = {},
+    _options: UploadOptions = {},
   ): Promise<string> {
     // In production, use AWS SDK
     // For now, fall back to local storage with a warning
@@ -98,12 +98,12 @@ export class StorageService {
     return `https://${this.s3Bucket}.s3.${this.s3Region}.amazonaws.com/${key}`;
   }
 
-  private async deleteFromS3(key: string): Promise<void> {
+  private async deleteFromS3(_key: string): Promise<void> {
     // In production, use AWS SDK
     this.logger.warn('S3 delete not fully implemented');
   }
 
-  async generateSignedUrl(key: string, expiresInSeconds: number = 3600): Promise<string> {
+  async generateSignedUrl(key: string, _expiresInSeconds: number = 3600): Promise<string> {
     // For local storage, just return the public URL
     // In production with S3, generate a presigned URL
     if (this.storageType === 's3') {

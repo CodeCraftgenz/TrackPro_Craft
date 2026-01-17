@@ -1,5 +1,5 @@
-import type { TrackEvent, ConsentCategories, UTMParams, StorageData } from './types';
-import { generateUUID, computeHMAC, getUTMParams, getCookie, setCookie } from './utils';
+import type { TrackEvent, ConsentCategories, StorageData } from './types';
+import { generateUUID, computeHMAC, getUTMParams, getCookie } from './utils';
 
 export interface TrackProConfig {
   apiKey: string;
@@ -23,7 +23,6 @@ export interface TrackProInstance {
 }
 
 const STORAGE_KEY = 'trackpro_data';
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes default
 
 export class TrackPro implements TrackProInstance {
   private config: Required<TrackProConfig>;

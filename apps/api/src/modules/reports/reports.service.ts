@@ -12,9 +12,10 @@ import { ReportsCacheService } from './reports-cache.service';
 interface DateRange {
   startDate?: string;
   endDate?: string;
+  [key: string]: string | undefined;
 }
 
-interface OverviewReport {
+export interface OverviewReport {
   totalEvents: number;
   uniqueUsers: number;
   uniqueSessions: number;
@@ -31,14 +32,14 @@ interface FunnelStep {
   dropoff: number;
 }
 
-interface FunnelReport {
+export interface FunnelReport {
   steps: FunnelStep[];
   conversionRate: number;
   totalStarted: number;
   totalCompleted: number;
 }
 
-interface PerformanceReport {
+export interface PerformanceReport {
   bySource: Array<{
     source: string;
     events: number;
@@ -63,7 +64,7 @@ interface PerformanceReport {
   averageOrderValue: number;
 }
 
-interface QualityReport {
+export interface QualityReport {
   eventValidation: {
     total: number;
     valid: number;
