@@ -36,6 +36,8 @@ apps/*/prisma/*.d.ts.map
 # OS
 .DS_Store
 Thumbs.db
+nul
+*/nul
 
 # Logs
 logs
