@@ -106,57 +106,62 @@ export class ClickHouseService implements OnModuleInit {
   ): Promise<{ events: EventRow[]; total: number }> {
     const { limit = 50, offset = 0, eventName, startDate, endDate } = options;
 
-    const conditions = [`project_id = '${this.escape(projectId)}'`];
+    try {
+      const conditions = [`project_id = '${this.escape(projectId)}'`];
 
-    if (eventName) {
-      conditions.push(`event_name = '${this.escape(eventName)}'`);
+      if (eventName) {
+        conditions.push(`event_name = '${this.escape(eventName)}'`);
+      }
+
+      if (startDate) {
+        conditions.push(`event_time >= ${Math.floor(startDate.getTime() / 1000)}`);
+      }
+
+      if (endDate) {
+        conditions.push(`event_time <= ${Math.floor(endDate.getTime() / 1000)}`);
+      }
+
+      const where = conditions.join(' AND ');
+
+      const countSql = `SELECT count() as total FROM events_raw WHERE ${where}`;
+      const countResult = await this.query<[{ total: string }]>(countSql);
+      const total = parseInt(countResult[0]?.total || '0', 10);
+
+      const eventsSql = `
+        SELECT
+          event_id,
+          project_id,
+          event_name,
+          event_time,
+          received_at,
+          anonymous_id,
+          user_id,
+          session_id,
+          url,
+          path,
+          referrer,
+          utm_source,
+          utm_medium,
+          utm_campaign,
+          ip,
+          user_agent,
+          country,
+          value,
+          currency
+        FROM events_raw
+        WHERE ${where}
+        ORDER BY event_time DESC
+        LIMIT ${limit}
+        OFFSET ${offset}
+      `;
+
+      const events = await this.query<EventRow[]>(eventsSql);
+
+      return { events, total };
+    } catch (error) {
+      this.logger.warn('Failed to fetch events from ClickHouse', error);
+      return { events: [], total: 0 };
     }
-
-    if (startDate) {
-      conditions.push(`event_time >= ${Math.floor(startDate.getTime() / 1000)}`);
-    }
-
-    if (endDate) {
-      conditions.push(`event_time <= ${Math.floor(endDate.getTime() / 1000)}`);
-    }
-
-    const where = conditions.join(' AND ');
-
-    const countSql = `SELECT count() as total FROM events_raw WHERE ${where}`;
-    const countResult = await this.query<[{ total: string }]>(countSql);
-    const total = parseInt(countResult[0]?.total || '0', 10);
-
-    const eventsSql = `
-      SELECT
-        event_id,
-        project_id,
-        event_name,
-        event_time,
-        received_at,
-        anonymous_id,
-        user_id,
-        session_id,
-        url,
-        path,
-        referrer,
-        utm_source,
-        utm_medium,
-        utm_campaign,
-        ip,
-        user_agent,
-        country,
-        value,
-        currency
-      FROM events_raw
-      WHERE ${where}
-      ORDER BY event_time DESC
-      LIMIT ${limit}
-      OFFSET ${offset}
-    `;
-
-    const events = await this.query<EventRow[]>(eventsSql);
-
-    return { events, total };
   }
 
   async getEventStats(
@@ -171,63 +176,68 @@ export class ClickHouseService implements OnModuleInit {
     uniqueUsers: number;
     topEvents: Array<{ event_name: string; count: number }>;
   }> {
-    const { startDate, endDate } = options;
+    try {
+      const { startDate, endDate } = options;
 
-    const now = Math.floor(Date.now() / 1000);
-    const todayStart = now - (now % 86400);
+      const now = Math.floor(Date.now() / 1000);
+      const todayStart = now - (now % 86400);
 
-    const conditions = [`project_id = '${this.escape(projectId)}'`];
+      const conditions = [`project_id = '${this.escape(projectId)}'`];
 
-    if (startDate) {
-      conditions.push(`event_time >= ${Math.floor(startDate.getTime() / 1000)}`);
+      if (startDate) {
+        conditions.push(`event_time >= ${Math.floor(startDate.getTime() / 1000)}`);
+      }
+
+      if (endDate) {
+        conditions.push(`event_time <= ${Math.floor(endDate.getTime() / 1000)}`);
+      }
+
+      const where = conditions.join(' AND ');
+
+      // Total events
+      const totalSql = `SELECT count() as total FROM events_raw WHERE ${where}`;
+      const totalResult = await this.query<[{ total: string }]>(totalSql);
+      const totalEvents = parseInt(totalResult[0]?.total || '0', 10);
+
+      // Events today
+      const todaySql = `
+        SELECT count() as total
+        FROM events_raw
+        WHERE project_id = '${this.escape(projectId)}'
+          AND event_time >= ${todayStart}
+      `;
+      const todayResult = await this.query<[{ total: string }]>(todaySql);
+      const eventsToday = parseInt(todayResult[0]?.total || '0', 10);
+
+      // Unique users
+      const usersSql = `
+        SELECT uniq(anonymous_id) as unique_users
+        FROM events_raw
+        WHERE ${where}
+      `;
+      const usersResult = await this.query<[{ unique_users: string }]>(usersSql);
+      const uniqueUsers = parseInt(usersResult[0]?.unique_users || '0', 10);
+
+      // Top events
+      const topSql = `
+        SELECT event_name, count() as count
+        FROM events_raw
+        WHERE ${where}
+        GROUP BY event_name
+        ORDER BY count DESC
+        LIMIT 10
+      `;
+      const topResult = await this.query<Array<{ event_name: string; count: string }>>(topSql);
+      const topEvents = topResult.map((row) => ({
+        event_name: row.event_name,
+        count: parseInt(row.count, 10),
+      }));
+
+      return { totalEvents, eventsToday, uniqueUsers, topEvents };
+    } catch (error) {
+      this.logger.warn('Failed to fetch event stats from ClickHouse', error);
+      return { totalEvents: 0, eventsToday: 0, uniqueUsers: 0, topEvents: [] };
     }
-
-    if (endDate) {
-      conditions.push(`event_time <= ${Math.floor(endDate.getTime() / 1000)}`);
-    }
-
-    const where = conditions.join(' AND ');
-
-    // Total events
-    const totalSql = `SELECT count() as total FROM events_raw WHERE ${where}`;
-    const totalResult = await this.query<[{ total: string }]>(totalSql);
-    const totalEvents = parseInt(totalResult[0]?.total || '0', 10);
-
-    // Events today
-    const todaySql = `
-      SELECT count() as total
-      FROM events_raw
-      WHERE project_id = '${this.escape(projectId)}'
-        AND event_time >= ${todayStart}
-    `;
-    const todayResult = await this.query<[{ total: string }]>(todaySql);
-    const eventsToday = parseInt(todayResult[0]?.total || '0', 10);
-
-    // Unique users
-    const usersSql = `
-      SELECT uniq(anonymous_id) as unique_users
-      FROM events_raw
-      WHERE ${where}
-    `;
-    const usersResult = await this.query<[{ unique_users: string }]>(usersSql);
-    const uniqueUsers = parseInt(usersResult[0]?.unique_users || '0', 10);
-
-    // Top events
-    const topSql = `
-      SELECT event_name, count() as count
-      FROM events_raw
-      WHERE ${where}
-      GROUP BY event_name
-      ORDER BY count DESC
-      LIMIT 10
-    `;
-    const topResult = await this.query<Array<{ event_name: string; count: string }>>(topSql);
-    const topEvents = topResult.map((row) => ({
-      event_name: row.event_name,
-      count: parseInt(row.count, 10),
-    }));
-
-    return { totalEvents, eventsToday, uniqueUsers, topEvents };
   }
 
   async ping(): Promise<boolean> {

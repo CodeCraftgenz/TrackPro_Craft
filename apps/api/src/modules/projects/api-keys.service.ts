@@ -3,6 +3,7 @@ import { MemberRole } from '@prisma/client';
 import * as crypto from 'crypto';
 
 import { PrismaService } from '../../prisma/prisma.service';
+import { EncryptionService } from '../integrations/encryption.service';
 import { CreateApiKeyDto } from './dto/projects.dto';
 
 export interface GeneratedApiKey {
@@ -17,7 +18,10 @@ export interface GeneratedApiKey {
 
 @Injectable()
 export class ApiKeysService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly encryptionService: EncryptionService,
+  ) {}
 
   async create(
     projectId: string,
@@ -37,6 +41,7 @@ export class ApiKeysService {
     const keyHash = this.hashKey(apiKey);
     const secretHash = this.hashKey(apiSecret);
     const keyPrefix = apiKey.substring(0, 8);
+    const keyEncrypted = this.encryptionService.encrypt(apiKey);
 
     const createdKey = await this.prisma.apiKey.create({
       data: {
@@ -44,6 +49,7 @@ export class ApiKeysService {
         name: dto.name,
         keyHash,
         keyPrefix,
+        keyEncrypted,
         secretHash,
         scopes: dto.scopes || ['events:write'],
       },
@@ -103,6 +109,41 @@ export class ApiKeysService {
       where: { id: apiKeyId },
       data: { revokedAt: new Date() },
     });
+  }
+
+  async revealApiKey(
+    apiKeyId: string,
+    projectId: string,
+    tenantId: string,
+    userId: string,
+  ): Promise<{ apiKey: string }> {
+    await this.checkProjectAccess(projectId, tenantId, userId, [
+      MemberRole.OWNER,
+      MemberRole.ADMIN,
+    ]);
+
+    const key = await this.prisma.apiKey.findFirst({
+      where: {
+        id: apiKeyId,
+        projectId,
+        revokedAt: null,
+      },
+      select: {
+        keyEncrypted: true,
+      },
+    });
+
+    if (!key) {
+      throw new NotFoundException('API key not found');
+    }
+
+    if (!key.keyEncrypted) {
+      throw new NotFoundException('API key cannot be revealed (legacy key)');
+    }
+
+    const decryptedKey = this.encryptionService.decrypt(key.keyEncrypted);
+
+    return { apiKey: decryptedKey };
   }
 
   async validateApiKey(

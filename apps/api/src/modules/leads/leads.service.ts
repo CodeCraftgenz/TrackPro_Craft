@@ -22,6 +22,7 @@ import {
   CreateNotificationConfigDto,
   UpdateNotificationConfigDto,
   LeadQueryDto,
+  WebhookLeadDto,
 } from './dto/leads.dto';
 
 interface LeadData {
@@ -464,6 +465,54 @@ export class LeadsService {
       success: true,
       leadId,
       redirectUrl: form.redirectUrl,
+    };
+  }
+
+  async captureWebhookLead(
+    projectId: string,
+    dto: WebhookLeadDto,
+    ip: string,
+    userAgent: string,
+  ) {
+    const leadId = `lead_webhook_${Date.now()}_${randomBytes(4).toString('hex')}`;
+
+    // Insert into ClickHouse
+    await this.insertLeadToClickHouse({
+      lead_id: leadId,
+      project_id: projectId,
+      platform: 'WEBSITE',
+      form_id: 'webhook',
+      form_name: 'API Webhook',
+      email: dto.email || '',
+      name: dto.name || '',
+      phone: dto.phone || '',
+      custom_fields: JSON.stringify(dto.custom || {}),
+      utm_source: dto.utm_source || '',
+      utm_medium: dto.utm_medium || '',
+      utm_campaign: dto.utm_campaign || '',
+      referrer: dto.referrer || '',
+      page_url: dto.page_url || '',
+      ip,
+      user_agent: userAgent,
+      created_at: Math.floor(Date.now() / 1000),
+    });
+
+    // Send notifications
+    await this.sendLeadNotifications(projectId, 'WEBSITE', {
+      leadId,
+      formName: 'API Webhook',
+      email: dto.email || '',
+      name: dto.name || '',
+      phone: dto.phone || '',
+      customFields: dto.custom || {},
+    });
+
+    this.logger.log(`Webhook lead captured: ${leadId} for project ${projectId}`);
+
+    return {
+      success: true,
+      leadId,
+      message: 'Lead captured successfully',
     };
   }
 

@@ -12,7 +12,7 @@ import { AnalyticsService } from './analytics.service';
 
 interface AuthRequest {
   user: {
-    userId: string;
+    sub: string;
     email: string;
   };
 }
@@ -27,7 +27,7 @@ export class AnalyticsController {
     @Param('tenantId') tenantId: string,
     @Request() req: AuthRequest,
   ) {
-    return this.analyticsService.getDashboardStats(tenantId, req.user.userId);
+    return this.analyticsService.getDashboardStats(tenantId, req.user.sub);
   }
 
   @Get('projects/:projectId/events')
@@ -44,7 +44,7 @@ export class AnalyticsController {
     return this.analyticsService.getProjectEvents(
       projectId,
       tenantId,
-      req!.user.userId,
+      req!.user.sub,
       {
         limit: limit ? parseInt(limit, 10) : undefined,
         offset: offset ? parseInt(offset, 10) : undefined,
@@ -63,7 +63,7 @@ export class AnalyticsController {
     @Query('endDate') endDate?: string,
     @Request() req?: AuthRequest,
   ) {
-    return this.analyticsService.getProjectStats(projectId, tenantId, req!.user.userId, {
+    return this.analyticsService.getProjectStats(projectId, tenantId, req!.user.sub, {
       startDate: startDate ? new Date(startDate) : undefined,
       endDate: endDate ? new Date(endDate) : undefined,
     });
@@ -78,7 +78,7 @@ export class AnalyticsController {
     @Query('status') status?: string,
     @Request() req?: AuthRequest,
   ) {
-    return this.analyticsService.getMetaDeliveryLogs(projectId, tenantId, req!.user.userId, {
+    return this.analyticsService.getMetaDeliveryLogs(projectId, tenantId, req!.user.sub, {
       limit: limit ? parseInt(limit, 10) : undefined,
       offset: offset ? parseInt(offset, 10) : undefined,
       status,
@@ -91,6 +91,6 @@ export class AnalyticsController {
     @Param('projectId') projectId: string,
     @Request() req?: AuthRequest,
   ) {
-    return this.analyticsService.getMetaDeliveryStats(projectId, tenantId, req!.user.userId);
+    return this.analyticsService.getMetaDeliveryStats(projectId, tenantId, req!.user.sub);
   }
 }

@@ -11,6 +11,8 @@ import {
   Trash2,
   Loader2,
   AlertTriangle,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -29,7 +31,8 @@ interface ApiKey {
 interface NewApiKeyResponse {
   id: string;
   name: string;
-  key: string;
+  apiKey: string;
+  apiSecret: string;
   keyPrefix: string;
   scopes: string[];
 }
@@ -66,6 +69,8 @@ export default function ProjectSettingsPage() {
   const [editingProject, setEditingProject] = useState(false);
   const [projectForm, setProjectForm] = useState({ name: '', domain: '' });
   const [projectError, setProjectError] = useState<string | null>(null);
+  const [revealedKeys, setRevealedKeys] = useState<Record<string, string>>({});
+  const [revealingKeyId, setRevealingKeyId] = useState<string | null>(null);
 
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
@@ -84,7 +89,7 @@ export default function ProjectSettingsPage() {
   const { data: apiKeys, isLoading: keysLoading } = useQuery({
     queryKey: ['apiKeys', tenantId, projectId],
     queryFn: () =>
-      get<{ data: ApiKey[] }>(
+      get<ApiKey[]>(
         `/api/v1/tenants/${tenantId}/projects/${projectId}/api-keys`,
       ),
     enabled: !!tenantId,
@@ -136,7 +141,7 @@ export default function ProjectSettingsPage() {
 
   const handleCopyKey = () => {
     if (newApiKey) {
-      navigator.clipboard.writeText(newApiKey.key);
+      navigator.clipboard.writeText(newApiKey.apiKey);
       setCopiedKey(true);
       setTimeout(() => setCopiedKey(false), 2000);
     }
@@ -145,6 +150,38 @@ export default function ProjectSettingsPage() {
   const handleDeleteApiKey = (keyId: string) => {
     if (confirm('Tem certeza que deseja revogar esta API key?')) {
       deleteApiKeyMutation.mutate(keyId);
+    }
+  };
+
+  const handleRevealKey = async (keyId: string) => {
+    if (revealedKeys[keyId]) {
+      // Hide the key
+      setRevealedKeys((prev) => {
+        const newKeys = { ...prev };
+        delete newKeys[keyId];
+        return newKeys;
+      });
+      return;
+    }
+
+    setRevealingKeyId(keyId);
+    try {
+      const response = await get<{ apiKey: string }>(
+        `/api/v1/tenants/${tenantId}/projects/${projectId}/api-keys/${keyId}/reveal`,
+      );
+      setRevealedKeys((prev) => ({ ...prev, [keyId]: response.apiKey }));
+    } catch {
+      alert('Não foi possível revelar a chave. Ela pode ser uma chave antiga.');
+    } finally {
+      setRevealingKeyId(null);
+    }
+  };
+
+  const handleCopyRevealedKey = (keyId: string) => {
+    const key = revealedKeys[keyId];
+    if (key) {
+      navigator.clipboard.writeText(key);
+      alert('Chave copiada!');
     }
   };
 
@@ -311,7 +348,7 @@ export default function ProjectSettingsPage() {
           </button>
         </div>
         <div className="p-4">
-          {apiKeys?.data?.length === 0 ? (
+          {apiKeys?.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Key className="h-12 w-12 text-white/30" />
               <h3 className="mt-4 font-semibold text-white">Nenhuma API Key</h3>
@@ -321,42 +358,74 @@ export default function ProjectSettingsPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {apiKeys?.data?.map((key) => (
+              {apiKeys?.map((key, index) => (
                 <div
-                  key={key.id}
-                  className="flex items-center justify-between rounded-md border border-white/10 p-4"
+                  key={key.id || `key-${index}`}
+                  className="rounded-md border border-white/10 p-4"
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5">
-                      <Key className="h-5 w-5 text-white/60" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-white">{key.name}</p>
-                      <div className="flex items-center space-x-2 text-sm text-white/60">
-                        <code className="rounded bg-white/5 px-1 text-white/80">
-                          {key.keyPrefix}...
-                        </code>
-                        <span>•</span>
-                        <span>
-                          {key.scopes.map((s) => s.split(':')[1]).join(', ')}
-                        </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5">
+                        <Key className="h-5 w-5 text-white/60" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">{key.name}</p>
+                        <div className="flex items-center space-x-2 text-sm text-white/60">
+                          <code className="rounded bg-white/5 px-1 text-white/80">
+                            {key.keyPrefix}...
+                          </code>
+                          <span>•</span>
+                          <span>
+                            {key.scopes.map((s) => s.split(':')[1]).join(', ')}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-white/50">
+                        {key.lastUsedAt
+                          ? `Usado em ${new Date(key.lastUsedAt).toLocaleDateString('pt-BR')}`
+                          : 'Nunca usado'}
+                      </span>
+                      <button
+                        onClick={() => handleRevealKey(key.id)}
+                        disabled={revealingKeyId === key.id}
+                        className="p-2 text-white/60 hover:bg-white/10 rounded-md disabled:opacity-50"
+                        title={revealedKeys[key.id] ? 'Ocultar chave' : 'Revelar chave'}
+                      >
+                        {revealingKeyId === key.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : revealedKeys[key.id] ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteApiKey(key.id)}
+                        className="p-2 text-red-400 hover:bg-red-500/10 rounded-md"
+                        title="Revogar"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs text-white/50">
-                      {key.lastUsedAt
-                        ? `Usado em ${new Date(key.lastUsedAt).toLocaleDateString('pt-BR')}`
-                        : 'Nunca usado'}
-                    </span>
-                    <button
-                      onClick={() => handleDeleteApiKey(key.id)}
-                      className="p-2 text-red-400 hover:bg-red-500/10 rounded-md"
-                      title="Revogar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {revealedKeys[key.id] && (
+                    <div className="mt-3 pt-3 border-t border-white/10">
+                      <div className="flex items-center space-x-2">
+                        <code className="flex-1 rounded-md bg-[#0d0d1a] p-2 text-sm break-all text-green-400 font-mono">
+                          {revealedKeys[key.id]}
+                        </code>
+                        <button
+                          onClick={() => handleCopyRevealedKey(key.id)}
+                          className="p-2 hover:bg-white/10 rounded-md text-white"
+                          title="Copiar"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -370,7 +439,7 @@ export default function ProjectSettingsPage() {
           <div className="w-full max-w-md rounded-lg bg-[#1a1a2e] border border-white/10 p-6 shadow-lg">
             <h2 className="text-lg font-semibold text-white">Criar Nova API Key</h2>
             <p className="mt-1 text-sm text-white/60">
-              A chave será exibida apenas uma vez
+              Você poderá visualizar a chave posteriormente clicando no ícone de olho
             </p>
 
             <form onSubmit={handleCreateApiKey} className="mt-6 space-y-4">
@@ -463,7 +532,7 @@ export default function ProjectSettingsPage() {
               <h2 className="text-lg font-semibold">Salve sua API Key</h2>
             </div>
             <p className="mt-2 text-sm text-white/60">
-              Esta chave não será exibida novamente. Copie e guarde em um local seguro.
+              Copie sua chave agora ou use o botão de olho na lista para revelá-la depois.
             </p>
 
             <div className="mt-6 space-y-4">
@@ -476,7 +545,7 @@ export default function ProjectSettingsPage() {
                 <label className="text-sm font-medium text-white">API Key</label>
                 <div className="flex items-center space-x-2">
                   <code className="flex-1 rounded-md bg-[#0d0d1a] p-3 text-sm break-all text-white/90">
-                    {newApiKey.key}
+                    {newApiKey.apiKey}
                   </code>
                   <button
                     onClick={handleCopyKey}

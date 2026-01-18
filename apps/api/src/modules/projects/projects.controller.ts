@@ -109,4 +109,15 @@ export class ProjectsController {
   ) {
     await this.apiKeysService.revoke(keyId, projectId, tenantId, user.sub);
   }
+
+  @Get(':id/api-keys/:keyId/reveal')
+  @ApiOperation({ summary: 'Reveal API key value' })
+  async revealApiKey(
+    @CurrentUser() user: JwtPayload,
+    @Param('tenantId') tenantId: string,
+    @Param('id') projectId: string,
+    @Param('keyId') keyId: string,
+  ) {
+    return this.apiKeysService.revealApiKey(keyId, projectId, tenantId, user.sub);
+  }
 }

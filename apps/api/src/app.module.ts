@@ -31,17 +31,17 @@ import { LeadsModule } from './modules/leads/leads.module';
       {
         name: 'short',
         ttl: 1000,
-        limit: 10,
+        limit: 50, // 50 requests per second
       },
       {
         name: 'medium',
         ttl: 10000,
-        limit: 50,
+        limit: 200, // 200 requests per 10 seconds
       },
       {
         name: 'long',
         ttl: 60000,
-        limit: 200,
+        limit: 1000, // 1000 requests per minute
       },
     ]),
     PrismaModule,

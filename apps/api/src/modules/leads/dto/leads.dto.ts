@@ -271,6 +271,55 @@ export class UpdateNotificationConfigDto {
   enabled?: boolean;
 }
 
+// ==================== Webhook Lead Capture DTO ====================
+
+export class WebhookLeadDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiPropertyOptional({ description: 'Any additional custom fields' })
+  @IsOptional()
+  @IsObject()
+  custom?: Record<string, unknown>;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  utm_source?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  utm_medium?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  utm_campaign?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  referrer?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  page_url?: string;
+}
+
 // ==================== Lead Query DTOs ====================
 
 export class LeadQueryDto {

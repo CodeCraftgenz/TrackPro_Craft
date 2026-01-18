@@ -71,6 +71,8 @@ export default function ProjectEventsPage() {
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
     queryFn: () => get<Tenant[]>('/api/v1/tenants'),
+    staleTime: 5 * 60 * 1000, // Cache tenants for 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   const tenantId = tenants?.[0]?.id;
@@ -95,7 +97,9 @@ export default function ProjectEventsPage() {
       );
     },
     enabled: !!tenantId,
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds (was 10s)
+    staleTime: 10000, // Consider data stale after 10 seconds
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
 
   const totalPages = eventsData ? Math.ceil(eventsData.total / limit) : 0;

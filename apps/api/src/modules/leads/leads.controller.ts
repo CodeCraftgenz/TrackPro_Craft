@@ -41,7 +41,9 @@ import {
   CreateNotificationConfigDto,
   UpdateNotificationConfigDto,
   LeadQueryDto,
+  WebhookLeadDto,
 } from './dto/leads.dto';
+import { ApiKeysService } from '../projects/api-keys.service';
 
 @ApiTags('leads')
 @Controller('tenants/:tenantId/projects/:projectId/leads')
@@ -610,7 +612,12 @@ export class LeadsOAuthController {
 @ApiTags('public-leads')
 @Controller('public/leads')
 export class PublicLeadsController {
-  constructor(private readonly leadsService: LeadsService) {}
+  private readonly logger = new Logger(PublicLeadsController.name);
+
+  constructor(
+    private readonly leadsService: LeadsService,
+    private readonly apiKeysService: ApiKeysService,
+  ) {}
 
   @Post('capture')
   @ApiOperation({ summary: 'Capture lead from embedded form' })
@@ -629,5 +636,39 @@ export class PublicLeadsController {
     }
 
     return this.leadsService.captureLead(form.projectId, dto, ip, userAgent);
+  }
+
+  @Post('webhook')
+  @ApiOperation({ summary: 'Capture lead via webhook using API Key' })
+  @ApiResponse({ status: 200, description: 'Lead captured successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid or missing API Key' })
+  async captureLeadWebhook(@Body() dto: WebhookLeadDto, @Req() req: Request) {
+    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || '';
+    const userAgent = req.headers['user-agent'] || '';
+
+    // Get API Key from header
+    const apiKey = req.headers['x-api-key'] as string;
+
+    if (!apiKey) {
+      return {
+        success: false,
+        error: 'API Key required. Send it in the X-API-Key header.'
+      };
+    }
+
+    // Validate API Key and get projectId
+    const keyData = await this.apiKeysService.validateApiKey(apiKey);
+
+    if (!keyData) {
+      return {
+        success: false,
+        error: 'Invalid API Key'
+      };
+    }
+
+    this.logger.log(`Lead webhook received for project ${keyData.projectId}`);
+
+    // Capture the lead
+    return this.leadsService.captureWebhookLead(keyData.projectId, dto, ip, userAgent);
   }
 }
