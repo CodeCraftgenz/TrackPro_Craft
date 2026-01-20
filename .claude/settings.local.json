@@ -5,7 +5,9 @@
       "Bash(tasklist:*)",
       "Bash(findstr:*)",
       "Bash(npm run start:dev:*)",
-      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\ricardo.moretti\\\\OneDrive - Tracbel\\\\Área de Trabalho\\\\Projeto sass\\\\apps\\\\web\\\\src\\\\app\\\\app\")"
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\ricardo.moretti\\\\OneDrive - Tracbel\\\\Área de Trabalho\\\\Projeto sass\\\\apps\\\\web\\\\src\\\\app\\\\app\")",
+      "Bash(Get-ChildItem -Recurse -Filter \"*.js\")",
+      "Bash(Select-Object -First 20 FullName)"
     ],
     "additionalDirectories": [
       "c:\\Users\\ricardo.moretti\\OneDrive - Tracbel\\Área de Trabalho\\Projeto sass\\apps\\web\\src\\app\\(dashboard)\\projects\\[id]"
