@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import * as express from 'express';
+import * as cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -34,6 +35,9 @@ async function bootstrap() {
   // Body size limits
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+  // Cookie parser for httpOnly cookie auth
+  app.use(cookieParser());
 
   // CORS Configuration
   const corsOrigins = configService.get<string>('CORS_ORIGIN', 'http://localhost:3000');

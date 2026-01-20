@@ -9,13 +9,19 @@ export class EncryptionService {
 
   constructor(private readonly configService: ConfigService) {
     const encryptionKey = this.configService.get<string>('ENCRYPTION_KEY');
+    const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
 
     if (encryptionKey) {
       // Derive a 32-byte key from the provided key
       this.key = crypto.scryptSync(encryptionKey, 'trackpro-salt', 32);
+    } else if (nodeEnv === 'production') {
+      throw new Error('ENCRYPTION_KEY is required in production environment');
     } else {
-      // Development fallback - use a static key (NOT SECURE FOR PRODUCTION)
-      this.key = crypto.scryptSync('dev-encryption-key', 'trackpro-salt', 32);
+      // Development only fallback - generates a random key per instance
+      console.warn(
+        '[Security Warning] ENCRYPTION_KEY not set. Using random key for development. Data will NOT be recoverable after restart.',
+      );
+      this.key = crypto.randomBytes(32);
     }
   }
 

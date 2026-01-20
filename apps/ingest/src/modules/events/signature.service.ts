@@ -9,10 +9,23 @@ export class SignatureService {
   private readonly timestampWindowMs: number;
 
   constructor(private readonly configService: ConfigService) {
-    this.masterSecret = this.configService.get<string>(
-      'HMAC_MASTER_SECRET',
-      'default-master-secret',
-    );
+    const secret = this.configService.get<string>('HMAC_MASTER_SECRET');
+    const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
+
+    if (!secret && nodeEnv === 'production') {
+      throw new Error('HMAC_MASTER_SECRET is required in production');
+    }
+
+    // In development, generate a random secret if not provided (per-instance)
+    if (!secret) {
+      this.masterSecret = crypto.randomBytes(32).toString('hex');
+      this.logger.warn(
+        '[Security] HMAC_MASTER_SECRET not set. Using random secret. Signatures will not persist across restarts.',
+      );
+    } else {
+      this.masterSecret = secret;
+    }
+
     this.timestampWindowMs = this.configService.get<number>(
       'TIMESTAMP_WINDOW_MS',
       300000, // 5 minutes

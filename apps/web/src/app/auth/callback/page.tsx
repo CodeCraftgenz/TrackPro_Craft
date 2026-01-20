@@ -4,17 +4,13 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
-const STORAGE_KEY = 'trackpro_auth';
-
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const accessToken = searchParams.get('accessToken');
-    const refreshToken = searchParams.get('refreshToken');
-    const expiresIn = searchParams.get('expiresIn');
+    const success = searchParams.get('success');
     const errorParam = searchParams.get('error');
 
     if (errorParam) {
@@ -22,24 +18,23 @@ function AuthCallbackContent() {
       return;
     }
 
-    if (accessToken && refreshToken && expiresIn) {
-      // Calculate expiration time
-      const expiresAt = Date.now() + parseInt(expiresIn, 10) * 1000;
-
-      // Store tokens
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          accessToken,
-          refreshToken,
-          expiresAt,
-        })
-      );
-
-      // Redirect to dashboard
+    if (success === 'true') {
+      // Cookies are already set by the backend (httpOnly)
+      // Just redirect to dashboard - cookies will be sent automatically
       router.replace('/dashboard');
     } else {
-      setError('Invalid OAuth callback - missing tokens');
+      // Legacy support: check for tokens in URL (will be removed in future)
+      const accessToken = searchParams.get('accessToken');
+      const refreshToken = searchParams.get('refreshToken');
+
+      if (accessToken && refreshToken) {
+        // Old behavior - redirect to dashboard
+        // Note: This path is deprecated and should not be used
+        console.warn('OAuth callback with URL tokens is deprecated. Please update your backend.');
+        router.replace('/dashboard');
+      } else {
+        setError('Invalid OAuth callback');
+      }
     }
   }, [searchParams, router]);
 

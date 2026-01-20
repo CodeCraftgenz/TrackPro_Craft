@@ -74,23 +74,12 @@ export class ApiKeyService {
     } catch (error) {
       this.logger.error('Failed to validate API key', error);
 
-      // In development mode, return a mock project ID
+      // Never return mock data - always validate properly
+      // Log warning in development to help debug
       if (this.configService.get<string>('NODE_ENV') === 'development') {
-        const devInfo: ApiKeyInfo = {
-          projectId: 'dev-project-id',
-          tenantId: 'dev-tenant-id',
-          scopes: ['events:write', 'events:read'],
-          status: 'active',
-        };
-
-        await this.redis.getClient().set(
-          `${this.cachePrefix}${apiKey}`,
-          JSON.stringify(devInfo),
-          'EX',
-          this.cacheTtl,
+        this.logger.warn(
+          'API key validation failed. Make sure the API service is running and INTERNAL_API_SECRET is configured.',
         );
-
-        return devInfo;
       }
 
       return null;
