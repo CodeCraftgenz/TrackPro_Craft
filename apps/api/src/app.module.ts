@@ -22,6 +22,7 @@ import { PrivacyModule } from './modules/privacy/privacy.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { LeadsModule } from './modules/leads/leads.module';
 import { EmailModule } from './modules/email/email.module';
+import { BillingModule } from './modules/billing/billing.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { EmailModule } from './modules/email/email.module';
     AdminModule,
     LeadsModule,
     EmailModule,
+    BillingModule,
   ],
   providers: [
     {

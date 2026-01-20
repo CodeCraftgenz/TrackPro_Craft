@@ -37,8 +37,18 @@ async function bootstrap() {
     }),
   );
 
-  // Body size limits
-  app.use(express.json({ limit: '10mb' }));
+  // Body size limits with raw body for Stripe webhook signature verification
+  app.use(
+    express.json({
+      limit: '10mb',
+      verify: (req: express.Request, _res, buf) => {
+        // Store raw body for Stripe webhook verification
+        if (req.originalUrl?.includes('/billing/webhooks/stripe')) {
+          (req as express.Request & { rawBody: Buffer }).rawBody = buf;
+        }
+      },
+    }),
+  );
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Cookie parser for httpOnly cookie auth
