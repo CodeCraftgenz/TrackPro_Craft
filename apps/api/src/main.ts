@@ -1,3 +1,7 @@
+// Initialize Sentry FIRST, before any other imports
+import { initSentry } from './sentry';
+initSentry();
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -5,6 +9,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import * as express from 'express';
 import * as cookieParser from 'cookie-parser';
+import * as Sentry from '@sentry/nestjs';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -68,7 +73,12 @@ async function bootstrap() {
       },
     }),
   );
-  app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter());
+  // Sentry error handler should be first
+  app.useGlobalFilters(
+    new Sentry.SentryGlobalFilter(),
+    new AllExceptionsFilter(),
+    new HttpExceptionFilter(),
+  );
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   // Graceful shutdown

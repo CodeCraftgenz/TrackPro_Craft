@@ -21,6 +21,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { PrivacyModule } from './modules/privacy/privacy.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { LeadsModule } from './modules/leads/leads.module';
+import { EmailModule } from './modules/email/email.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { LeadsModule } from './modules/leads/leads.module';
     PrivacyModule,
     AdminModule,
     LeadsModule,
+    EmailModule,
   ],
   providers: [
     {
