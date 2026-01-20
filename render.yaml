@@ -1,0 +1,113 @@
+# ================================
+# TrackPro - Render Blueprint
+# ================================
+# Este arquivo configura o deploy automático no Render
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # ================================
+  # API (NestJS Backend)
+  # ================================
+  - type: web
+    name: trackpro-api
+    env: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    region: oregon # ou sao-paulo se disponível
+    plan: starter # $7/mês - pode mudar para free inicialmente
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: CORS_ORIGIN
+        sync: false # Configurar manualmente com URL do frontend
+      - key: FRONTEND_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false # Configurar com URL do MySQL
+      - key: REDIS_URL
+        sync: false # Configurar com URL do Redis
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REFRESH_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: HMAC_MASTER_SECRET
+        generateValue: true
+      - key: INTERNAL_API_SECRET
+        generateValue: true
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+
+  # ================================
+  # Worker (Background Jobs)
+  # ================================
+  - type: worker
+    name: trackpro-worker
+    env: docker
+    dockerfilePath: ./apps/worker/Dockerfile
+    dockerContext: .
+    region: oregon
+    plan: starter
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromService:
+          name: trackpro-api
+          type: web
+          envVarKey: DATABASE_URL
+      - key: REDIS_URL
+        fromService:
+          name: trackpro-api
+          type: web
+          envVarKey: REDIS_URL
+      - key: CLICKHOUSE_HOST
+        sync: false
+      - key: CLICKHOUSE_DATABASE
+        value: trackpro
+      - key: CLICKHOUSE_USER
+        sync: false
+      - key: CLICKHOUSE_PASSWORD
+        sync: false
+
+  # ================================
+  # Ingest (Event Collection)
+  # ================================
+  - type: web
+    name: trackpro-ingest
+    env: docker
+    dockerfilePath: ./apps/ingest/Dockerfile
+    dockerContext: .
+    region: oregon
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3002
+      - key: REDIS_URL
+        fromService:
+          name: trackpro-api
+          type: web
+          envVarKey: REDIS_URL
+      - key: CLICKHOUSE_HOST
+        sync: false
+      - key: CLICKHOUSE_DATABASE
+        value: trackpro
+
+# ================================
+# Databases (Opcional - pode usar externos)
+# ================================
+# databases:
+#   - name: trackpro-redis
+#     plan: starter # $7/mês
+#     ipAllowList: [] # Permite apenas conexões internas
