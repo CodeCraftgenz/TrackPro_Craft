@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 
 import { AuthService } from '../auth.service';
-import { JwtPayload } from '../../../common/decorators/current-user.decorator';
+import { JwtPayload } from '../decorators/current-user.decorator';
 
 // Extract JWT from cookie or Authorization header
 const extractJwtFromCookieOrHeader = (req: Request): string | null => {

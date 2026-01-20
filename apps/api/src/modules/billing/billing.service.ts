@@ -57,7 +57,7 @@ export interface UsageSummary {
 @Injectable()
 export class BillingService {
   private readonly logger = new Logger(BillingService.name);
-  private readonly stripe: Stripe | null = null;
+  private stripe: Stripe | null = null;
   private readonly webhookSecret: string;
 
   constructor(
@@ -69,10 +69,7 @@ export class BillingService {
     this.webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET', '');
 
     if (stripeSecretKey) {
-      this.stripe = new Stripe(stripeSecretKey, {
-        apiVersion: '2024-12-18.acacia',
-        typescript: true,
-      });
+      this.stripe = new Stripe(stripeSecretKey);
       this.logger.log('Stripe initialized');
     } else {
       this.logger.warn('Stripe not configured - billing features disabled');
@@ -274,7 +271,6 @@ export class BillingService {
 
     // Get current period usage
     const now = new Date();
-    const periodStart = subscription.currentPeriodStart || new Date(now.getFullYear(), now.getMonth(), 1);
 
     const [projectsCount, teamMembersCount, usageRecord] = await Promise.all([
       this.prisma.project.count({ where: { tenantId } }),
@@ -466,7 +462,8 @@ export class BillingService {
   /**
    * Handle subscription created/updated
    */
-  private async handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async handleSubscriptionUpdated(stripeSubscription: any): Promise<void> {
     const tenantId = stripeSubscription.metadata?.tenantId;
     const planId = stripeSubscription.metadata?.planId;
     const billingInterval = stripeSubscription.metadata?.billingInterval || 'monthly';
@@ -478,6 +475,10 @@ export class BillingService {
 
     const status = this.mapStripeStatus(stripeSubscription.status);
 
+    // Handle both old and new Stripe API property names
+    const periodStart = stripeSubscription.current_period_start || stripeSubscription.currentPeriodStart;
+    const periodEnd = stripeSubscription.current_period_end || stripeSubscription.currentPeriodEnd;
+
     await this.prisma.subscription.upsert({
       where: { tenantId },
       create: {
@@ -487,8 +488,8 @@ export class BillingService {
         stripeCustomerId: stripeSubscription.customer as string,
         stripeSubscriptionId: stripeSubscription.id,
         billingInterval,
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+        currentPeriodStart: new Date(periodStart * 1000),
+        currentPeriodEnd: new Date(periodEnd * 1000),
         trialStart: stripeSubscription.trial_start
           ? new Date(stripeSubscription.trial_start * 1000)
           : null,
@@ -499,8 +500,8 @@ export class BillingService {
       },
       update: {
         status,
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+        currentPeriodStart: new Date(periodStart * 1000),
+        currentPeriodEnd: new Date(periodEnd * 1000),
         trialEnd: stripeSubscription.trial_end
           ? new Date(stripeSubscription.trial_end * 1000)
           : null,
@@ -514,7 +515,8 @@ export class BillingService {
   /**
    * Handle subscription deleted
    */
-  private async handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async handleSubscriptionDeleted(stripeSubscription: any): Promise<void> {
     const tenantId = stripeSubscription.metadata?.tenantId;
 
     if (!tenantId) {
@@ -543,13 +545,15 @@ export class BillingService {
   /**
    * Handle invoice paid
    */
-  private async handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
-    if (!invoice.subscription) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async handleInvoicePaid(invoice: any): Promise<void> {
+    const invoiceSubscription = invoice.subscription;
+    if (!invoiceSubscription) {
       return;
     }
 
     const subscription = await this.prisma.subscription.findUnique({
-      where: { stripeSubscriptionId: invoice.subscription as string },
+      where: { stripeSubscriptionId: invoiceSubscription as string },
     });
 
     if (!subscription) {
@@ -584,13 +588,15 @@ export class BillingService {
   /**
    * Handle invoice payment failed
    */
-  private async handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
-    if (!invoice.subscription) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async handleInvoicePaymentFailed(invoice: any): Promise<void> {
+    const invoiceSubscription = invoice.subscription;
+    if (!invoiceSubscription) {
       return;
     }
 
     const subscription = await this.prisma.subscription.findUnique({
-      where: { stripeSubscriptionId: invoice.subscription as string },
+      where: { stripeSubscriptionId: invoiceSubscription as string },
     });
 
     if (!subscription) {

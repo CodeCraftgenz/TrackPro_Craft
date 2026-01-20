@@ -1,6 +1,7 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { authenticator } from 'otplib';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { authenticator } = require('otplib');
 import * as QRCode from 'qrcode';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EncryptionService } from '../integrations/encryption.service';

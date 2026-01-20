@@ -33,7 +33,7 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private readonly provider: EmailProvider;
   private readonly defaultFrom: string;
-  private readonly smtpTransporter?: Transporter;
+  private smtpTransporter?: Transporter;
 
   constructor(private readonly configService: ConfigService) {
     this.provider = this.configService.get<EmailProvider>(
@@ -73,13 +73,12 @@ export class EmailService {
           );
         }
 
-        (this as { smtpTransporter?: Transporter }).smtpTransporter =
-          nodemailer.createTransport({
-            host,
-            port,
-            secure: port === 465,
-            auth: { user, pass },
-          });
+        this.smtpTransporter = nodemailer.createTransport({
+          host,
+          port,
+          secure: port === 465,
+          auth: { user, pass },
+        });
         this.logger.log(`Email provider initialized: SMTP (${host}:${port})`);
         break;
 
@@ -125,7 +124,8 @@ export class EmailService {
   private async sendViaSendGrid(
     options: EmailOptions & { from: string },
   ): Promise<EmailResult> {
-    const msg: sgMail.MailDataRequired = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const msg: any = {
       to: options.to,
       from: options.from,
       subject: options.subject,

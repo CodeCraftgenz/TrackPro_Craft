@@ -196,7 +196,7 @@ export default function ProjectDetailPage() {
   );
 }
 
-function LeadCaptureCodeSection({ projectId, apiKey }: { projectId: string; apiKey?: string }) {
+function LeadCaptureCodeSection({ apiKey }: { projectId: string; apiKey?: string }) {
   const [copied, setCopied] = useState(false);
   const [formSelector, setFormSelector] = useState('#contact-form');
 

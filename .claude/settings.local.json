@@ -7,7 +7,9 @@
       "Bash(npm run start:dev:*)",
       "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\ricardo.moretti\\\\OneDrive - Tracbel\\\\Área de Trabalho\\\\Projeto sass\\\\apps\\\\web\\\\src\\\\app\\\\app\")",
       "Bash(Get-ChildItem -Recurse -Filter \"*.js\")",
-      "Bash(Select-Object -First 20 FullName)"
+      "Bash(Select-Object -First 20 FullName)",
+      "Bash(pnpm --filter @trackpro/api add:*)",
+      "Bash(pnpm --filter @trackpro/web build:*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\ricardo.moretti\\OneDrive - Tracbel\\Área de Trabalho\\Projeto sass\\apps\\web\\src\\app\\(dashboard)\\projects\\[id]"

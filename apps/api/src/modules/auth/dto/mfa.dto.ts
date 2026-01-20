@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, Length, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, Length } from 'class-validator';
 
 export class VerifyMfaDto {
   @ApiProperty({
@@ -8,7 +8,7 @@ export class VerifyMfaDto {
   })
   @IsString()
   @IsNotEmpty()
-  token: string;
+  token!: string;
 }
 
 export class DisableMfaDto {
@@ -19,7 +19,7 @@ export class DisableMfaDto {
   @IsString()
   @IsNotEmpty()
   @Length(6, 9) // 6 for TOTP, 9 for backup code (XXXX-XXXX)
-  token: string;
+  token!: string;
 }
 
 export class RegenerateBackupCodesDto {
@@ -30,23 +30,23 @@ export class RegenerateBackupCodesDto {
   @IsString()
   @IsNotEmpty()
   @Length(6, 6)
-  token: string;
+  token!: string;
 }
 
 export class MfaSetupResponseDto {
   @ApiProperty({ description: 'TOTP secret (show only once)' })
-  secret: string;
+  secret!: string;
 
   @ApiProperty({ description: 'QR code as data URL' })
-  qrCodeUrl: string;
+  qrCodeUrl!: string;
 
   @ApiProperty({ description: 'Backup codes (show only once)' })
-  backupCodes: string[];
+  backupCodes!: string[];
 }
 
 export class MfaStatusResponseDto {
   @ApiProperty({ description: 'Whether MFA is enabled' })
-  enabled: boolean;
+  enabled!: boolean;
 
   @ApiPropertyOptional({ description: 'Number of backup codes remaining' })
   backupCodesRemaining?: number;
@@ -56,12 +56,12 @@ export class LoginWithMfaDto {
   @ApiProperty({ description: 'Email address' })
   @IsString()
   @IsNotEmpty()
-  email: string;
+  email!: string;
 
   @ApiProperty({ description: 'Password' })
   @IsString()
   @IsNotEmpty()
-  password: string;
+  password!: string;
 
   @ApiPropertyOptional({ description: 'MFA token (if MFA is enabled)' })
   @IsString()

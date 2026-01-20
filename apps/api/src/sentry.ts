@@ -38,7 +38,8 @@ export function initSentry(): void {
       if (event.request?.data) {
         const data = event.request.data;
         if (typeof data === 'object' && data !== null) {
-          const sanitized = { ...data };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const sanitized: Record<string, any> = { ...data };
           const sensitiveFields = [
             'password',
             'passwordHash',

@@ -27,13 +27,13 @@ export class EnvironmentVariables {
   // Database - Required
   @IsString()
   @IsNotEmpty({ message: 'DATABASE_URL is required' })
-  DATABASE_URL: string;
+  DATABASE_URL!: string;
 
   // JWT - Required with minimum length
   @IsString()
   @IsNotEmpty({ message: 'JWT_SECRET is required' })
   @MinLength(32, { message: 'JWT_SECRET must be at least 32 characters' })
-  JWT_SECRET: string;
+  JWT_SECRET!: string;
 
   @IsString()
   @IsOptional()
@@ -47,11 +47,11 @@ export class EnvironmentVariables {
   // ClickHouse - Required
   @IsString()
   @IsNotEmpty({ message: 'CLICKHOUSE_HOST is required' })
-  CLICKHOUSE_HOST: string;
+  CLICKHOUSE_HOST!: string;
 
   @IsString()
   @IsNotEmpty({ message: 'CLICKHOUSE_DATABASE is required' })
-  CLICKHOUSE_DATABASE: string;
+  CLICKHOUSE_DATABASE!: string;
 
   @IsString()
   @IsOptional()
@@ -90,11 +90,11 @@ export class EnvironmentVariables {
   // CORS - Required
   @IsString()
   @IsNotEmpty({ message: 'CORS_ORIGIN is required' })
-  CORS_ORIGIN: string;
+  CORS_ORIGIN!: string;
 
   @IsString()
   @IsNotEmpty({ message: 'FRONTEND_URL is required' })
-  FRONTEND_URL: string;
+  FRONTEND_URL!: string;
 }
 
 export function validate(config: Record<string, unknown>) {

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString, IsUrl, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, IsUrl } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PlanTier } from '@prisma/client';
 
@@ -6,94 +6,94 @@ export class CreateCheckoutSessionDto {
   @ApiProperty({ enum: PlanTier, description: 'The plan tier to subscribe to' })
   @IsEnum(PlanTier)
   @IsNotEmpty()
-  planTier: PlanTier;
+  planTier!: PlanTier;
 
   @ApiProperty({ enum: ['monthly', 'yearly'], description: 'Billing interval' })
   @IsEnum(['monthly', 'yearly'])
   @IsNotEmpty()
-  billingInterval: 'monthly' | 'yearly';
+  billingInterval!: 'monthly' | 'yearly';
 
   @ApiProperty({ description: 'URL to redirect to after successful checkout' })
   @IsUrl()
   @IsNotEmpty()
-  successUrl: string;
+  successUrl!: string;
 
   @ApiProperty({ description: 'URL to redirect to if checkout is canceled' })
   @IsUrl()
   @IsNotEmpty()
-  cancelUrl: string;
+  cancelUrl!: string;
 }
 
 export class CreatePortalSessionDto {
   @ApiProperty({ description: 'URL to redirect to after leaving the portal' })
   @IsUrl()
   @IsNotEmpty()
-  returnUrl: string;
+  returnUrl!: string;
 }
 
 export class UpdateStripePriceIdsDto {
   @ApiProperty({ enum: PlanTier, description: 'The plan tier to update' })
   @IsEnum(PlanTier)
   @IsNotEmpty()
-  tier: PlanTier;
+  tier!: PlanTier;
 
   @ApiProperty({ description: 'Stripe price ID for monthly billing' })
   @IsString()
   @IsNotEmpty()
-  monthlyPriceId: string;
+  monthlyPriceId!: string;
 
   @ApiProperty({ description: 'Stripe price ID for yearly billing' })
   @IsString()
   @IsNotEmpty()
-  yearlyPriceId: string;
+  yearlyPriceId!: string;
 }
 
 // Response DTOs
 
 export class PlanResponseDto {
   @ApiProperty()
-  id: string;
+  id!: string;
 
   @ApiProperty()
-  name: string;
+  name!: string;
 
   @ApiProperty({ enum: PlanTier })
-  tier: PlanTier;
+  tier!: PlanTier;
 
   @ApiPropertyOptional()
   description?: string;
 
   @ApiProperty({ description: 'Monthly price in cents' })
-  monthlyPrice: number;
+  monthlyPrice!: number;
 
   @ApiProperty({ description: 'Yearly price in cents' })
-  yearlyPrice: number;
+  yearlyPrice!: number;
 
   @ApiProperty()
-  maxProjects: number;
+  maxProjects!: number;
 
   @ApiProperty()
-  maxEventsPerMonth: number;
+  maxEventsPerMonth!: number;
 
   @ApiProperty()
-  maxTeamMembers: number;
+  maxTeamMembers!: number;
 
   @ApiProperty()
-  retentionDays: number;
+  retentionDays!: number;
 
   @ApiProperty({ type: [String] })
-  features: string[];
+  features!: string[];
 }
 
 export class SubscriptionResponseDto {
   @ApiProperty()
-  id: string;
+  id!: string;
 
   @ApiProperty()
-  status: string;
+  status!: string;
 
   @ApiProperty()
-  plan: {
+  plan!: {
     id: string;
     name: string;
     tier: PlanTier;
@@ -101,7 +101,7 @@ export class SubscriptionResponseDto {
   };
 
   @ApiProperty()
-  billingInterval: string;
+  billingInterval!: string;
 
   @ApiPropertyOptional()
   currentPeriodStart?: Date;
@@ -110,7 +110,7 @@ export class SubscriptionResponseDto {
   currentPeriodEnd?: Date;
 
   @ApiProperty()
-  cancelAtPeriodEnd: boolean;
+  cancelAtPeriodEnd!: boolean;
 
   @ApiPropertyOptional()
   trialEnd?: Date;
@@ -118,42 +118,42 @@ export class SubscriptionResponseDto {
 
 export class UsageSummaryResponseDto {
   @ApiProperty()
-  eventsCount: number;
+  eventsCount!: number;
 
   @ApiProperty()
-  eventsLimit: number;
+  eventsLimit!: number;
 
   @ApiProperty({ description: 'Percentage of events used (0-100)' })
-  eventsPercentage: number;
+  eventsPercentage!: number;
 
   @ApiProperty()
-  projectsCount: number;
+  projectsCount!: number;
 
   @ApiProperty()
-  projectsLimit: number;
+  projectsLimit!: number;
 
   @ApiProperty()
-  teamMembersCount: number;
+  teamMembersCount!: number;
 
   @ApiProperty()
-  teamMembersLimit: number;
+  teamMembersLimit!: number;
 }
 
 export class InvoiceResponseDto {
   @ApiProperty()
-  id: string;
+  id!: string;
 
   @ApiProperty({ description: 'Amount due in cents' })
-  amountDue: number;
+  amountDue!: number;
 
   @ApiProperty({ description: 'Amount paid in cents' })
-  amountPaid: number;
+  amountPaid!: number;
 
   @ApiProperty()
-  currency: string;
+  currency!: string;
 
   @ApiProperty()
-  status: string;
+  status!: string;
 
   @ApiPropertyOptional()
   invoiceUrl?: string;
@@ -162,37 +162,37 @@ export class InvoiceResponseDto {
   invoicePdf?: string;
 
   @ApiProperty()
-  periodStart: Date;
+  periodStart!: Date;
 
   @ApiProperty()
-  periodEnd: Date;
+  periodEnd!: Date;
 
   @ApiPropertyOptional()
   paidAt?: Date;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt!: Date;
 }
 
 export class CheckoutSessionResponseDto {
   @ApiProperty({ description: 'URL to redirect the user to for checkout' })
-  url: string;
+  url!: string;
 }
 
 export class PlanLimitCheckResponseDto {
   @ApiProperty({ description: 'Whether the action is allowed' })
-  allowed: boolean;
+  allowed!: boolean;
 
   @ApiProperty({ description: 'Current usage count' })
-  current: number;
+  current!: number;
 
   @ApiProperty({ description: 'Plan limit' })
-  limit: number;
+  limit!: number;
 }
 
 export class PlanComparisonResponseDto {
   @ApiProperty({ type: [Object] })
-  plans: Array<{
+  plans!: Array<{
     id: string;
     name: string;
     tier: PlanTier;
@@ -208,7 +208,7 @@ export class PlanComparisonResponseDto {
   }>;
 
   @ApiProperty({ type: [Object] })
-  features: Array<{
+  features!: Array<{
     key: string;
     label: string;
     availability: Record<PlanTier, boolean>;

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { apiClient } from '@/lib/api';
-import { Check, X, Loader2, CreditCard, Receipt, AlertCircle } from 'lucide-react';
+import { api } from '@/lib/api';
+import { Check, Loader2, CreditCard, Receipt } from 'lucide-react';
 
 interface Plan {
   id: string;
@@ -82,7 +82,7 @@ const featureLabels: Record<string, string> = {
 };
 
 export default function BillingPage() {
-  const { user } = useAuth();
+  useAuth(); // Ensure user is authenticated
   const [plans, setPlans] = useState<Plan[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [usage, setUsage] = useState<UsageSummary | null>(null);
@@ -98,16 +98,16 @@ export default function BillingPage() {
   const loadBillingData = async () => {
     try {
       const [plansRes, subscriptionRes, usageRes, invoicesRes] = await Promise.all([
-        apiClient.get('/billing/plans'),
-        apiClient.get('/billing/subscription'),
-        apiClient.get('/billing/usage'),
-        apiClient.get('/billing/invoices'),
+        api.get<Plan[]>('/api/v1/billing/plans'),
+        api.get<Subscription | null>('/api/v1/billing/subscription').catch(() => null),
+        api.get<UsageSummary | null>('/api/v1/billing/usage').catch(() => null),
+        api.get<Invoice[]>('/api/v1/billing/invoices').catch(() => []),
       ]);
 
-      setPlans(plansRes.data || []);
-      setSubscription(subscriptionRes.data);
-      setUsage(usageRes.data);
-      setInvoices(invoicesRes.data || []);
+      setPlans(plansRes || []);
+      setSubscription(subscriptionRes);
+      setUsage(usageRes);
+      setInvoices(invoicesRes || []);
     } catch (error) {
       console.error('Failed to load billing data:', error);
     } finally {
@@ -118,15 +118,15 @@ export default function BillingPage() {
   const handleSubscribe = async (planTier: string) => {
     setActionLoading(planTier);
     try {
-      const res = await apiClient.post('/billing/checkout', {
+      const res = await api.post<{ url: string }>('/api/v1/billing/checkout', {
         planTier,
         billingInterval,
         successUrl: `${window.location.origin}/billing?success=true`,
         cancelUrl: `${window.location.origin}/billing?canceled=true`,
       });
 
-      if (res.data.url) {
-        window.location.href = res.data.url;
+      if (res.url) {
+        window.location.href = res.url;
       }
     } catch (error) {
       console.error('Failed to create checkout session:', error);
@@ -139,12 +139,12 @@ export default function BillingPage() {
   const handleManageBilling = async () => {
     setActionLoading('portal');
     try {
-      const res = await apiClient.post('/billing/portal', {
+      const res = await api.post<{ url: string }>('/api/v1/billing/portal', {
         returnUrl: window.location.href,
       });
 
-      if (res.data.url) {
-        window.location.href = res.data.url;
+      if (res.url) {
+        window.location.href = res.url;
       }
     } catch (error) {
       console.error('Failed to create portal session:', error);
@@ -161,7 +161,7 @@ export default function BillingPage() {
 
     setActionLoading('cancel');
     try {
-      await apiClient.delete('/billing/subscription');
+      await api.delete('/api/v1/billing/subscription');
       await loadBillingData();
     } catch (error) {
       console.error('Failed to cancel subscription:', error);
@@ -174,7 +174,7 @@ export default function BillingPage() {
   const handleResumeSubscription = async () => {
     setActionLoading('resume');
     try {
-      await apiClient.post('/billing/subscription/resume');
+      await api.post('/api/v1/billing/subscription/resume');
       await loadBillingData();
     } catch (error) {
       console.error('Failed to resume subscription:', error);

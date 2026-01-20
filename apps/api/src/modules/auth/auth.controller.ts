@@ -16,7 +16,7 @@ import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, RefreshTokenDto, LogoutDto } from './dto/auth.dto';
-import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator';
+import { CurrentUser, JwtPayload } from './decorators/current-user.decorator';
 
 interface OAuthUser {
   provider: string;

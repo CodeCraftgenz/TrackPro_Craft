@@ -6,14 +6,13 @@ import {
   Body,
   Query,
   Req,
-  Res,
   RawBodyRequest,
   Headers,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import {
   ApiTags,
   ApiOperation,

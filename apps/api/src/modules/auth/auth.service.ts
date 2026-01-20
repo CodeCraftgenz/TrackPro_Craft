@@ -24,6 +24,11 @@ export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
+  user?: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
 }
 
 @Injectable()
@@ -58,7 +63,11 @@ export class AuthService {
 
     this.logger.log(`User registered: ${user.email}`);
 
-    return this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email);
+    return {
+      ...tokens,
+      user: { id: user.id, email: user.email, name: user.name },
+    };
   }
 
   async login(dto: LoginDto): Promise<AuthTokens> {
@@ -78,7 +87,11 @@ export class AuthService {
 
     this.logger.log(`User logged in: ${user.email}`);
 
-    return this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email);
+    return {
+      ...tokens,
+      user: { id: user.id, email: user.email, name: user.name },
+    };
   }
 
   async refreshToken(dto: RefreshTokenDto): Promise<AuthTokens> {
