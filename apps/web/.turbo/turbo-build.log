@@ -1,0 +1,31 @@
+
+> @trackpro/web@0.1.0 build C:\Users\ricardo.moretti\OneDrive - Tracbel\Área de Trabalho\Projeto sass\apps\web
+> next build
+
+ ⚠ `experimental.typedRoutes` has been moved to `typedRoutes`. Please update your next.config.ts file accordingly.
+   ▲ Next.js 15.5.9
+   - Environments: .env
+   - Experiments (use with caution):
+     ✓ typedRoutes
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 11.6s
+   Linting and checking validity of types ...
+ ⨯ ESLint: Failed to load config "next/core-web-vitals" to extend from. Referenced from: C:\Users\ricardo.moretti\OneDrive - Tracbel\Área de Trabalho\Projeto sass\apps\web\.eslintrc.js
+Failed to compile.
+
+./src/app/(dashboard)/projects/[id]/consent/page.tsx:639:31
+Type error: Type '{ analytics?: { enabled: boolean; description: string; } | undefined; marketing?: { enabled: boolean; description: string; } | undefined; personalization?: { enabled: boolean; description: string; } | undefined; }' is not assignable to type '{ analytics: { enabled: boolean; description: string; }; marketing: { enabled: boolean; description: string; }; personalization: { enabled: boolean; description: string; }; }'.
+  Types of property 'analytics' are incompatible.
+    Type '{ enabled: boolean; description: string; } | undefined' is not assignable to type '{ enabled: boolean; description: string; }'.
+      Type 'undefined' is not assignable to type '{ enabled: boolean; description: string; }'.
+
+[0m [90m 637 |[39m                           onClick[33m=[39m{() [33m=>[39m
+ [90m 638 |[39m                             updateSettingsMutation[33m.[39mmutate({
+[31m[1m>[22m[39m[90m 639 |[39m                               categoriesConfig[33m:[39m {
+ [90m     |[39m                               [31m[1m^[22m[39m
+ [90m 640 |[39m                                 [33m...[39msettings[33m?[39m[33m.[39mcategoriesConfig[33m,[39m
+ [90m 641 |[39m                                 [category[33m.[39mkey][33m:[39m {
+ [90m 642 |[39m                                   [33m...[39msettings[33m?[39m[33m.[39mcategoriesConfig[33m?[39m[33m.[39m[[0m
+Next.js build worker exited with code: 1 and signal: null
+ ELIFECYCLE  Command failed with exit code 1.

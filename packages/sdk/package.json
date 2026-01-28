@@ -1,0 +1,45 @@
+{
+  "name": "@trackpro/sdk",
+  "version": "0.1.0",
+  "description": "TrackPro JavaScript SDK for first-party tracking",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --minify",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist .turbo node_modules"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@trackpro/eslint-config": "workspace:*",
+    "@trackpro/tsconfig": "workspace:*",
+    "@types/node": "^22.10.5",
+    "eslint": "^8.57.1",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "keywords": [
+    "analytics",
+    "tracking",
+    "first-party",
+    "meta-capi",
+    "server-side"
+  ],
+  "author": "TrackPro",
+  "license": "MIT"
+}
