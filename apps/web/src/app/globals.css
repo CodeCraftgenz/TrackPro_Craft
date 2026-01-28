@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* TrackProgenZ Dark Theme */
+    /* Cores principais da empresa */
+    --background: 230 35% 13%; /* #1A1A2E - Fundo Escuro */
+    --foreground: 0 0% 100%; /* #FFFFFF - Texto principal */
+    --card: 222 43% 17%; /* #16213E - Fundo Secundário */
+    --card-foreground: 0 0% 100%;
+    --popover: 222 43% 17%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Primary: Ciano/Turquesa #00E4F2 */
+    --primary: 184 100% 47%;
+    --primary-foreground: 230 35% 13%;
+
+    /* Secondary: Magenta/Rosa #D12BF2 */
+    --secondary: 293 89% 56%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 222 43% 22%;
+    --muted-foreground: 0 0% 69%; /* #B0B0B0 */
+    --accent: 222 43% 25%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive/Error: #FF6B6B */
+    --destructive: 0 100% 71%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 43% 25%;
+    --input: 222 43% 20%;
+    --ring: 184 100% 47%;
+    --radius: 0.75rem;
+
+    /* Chart colors */
+    --chart-1: 184 100% 47%; /* Ciano */
+    --chart-2: 293 89% 56%; /* Magenta */
+    --chart-3: 145 100% 45%; /* Verde sucesso #00E676 */
+    --chart-4: 285 100% 24%; /* Roxo escuro #68007B */
+    --chart-5: 0 100% 71%; /* Erro */
+
+    /* Custom gradient colors */
+    --gradient-cyan: 184 100% 47%;
+    --gradient-magenta: 293 89% 56%;
+    --gradient-purple: 285 100% 24%;
+    --gradient-green: 145 100% 45%;
+  }
+
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 230 35% 13%;
+    --card: 0 0% 98%;
+    --card-foreground: 230 35% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 35% 13%;
+    --primary: 184 100% 47%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 293 89% 56%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 230 35% 13%;
+    --destructive: 0 100% 71%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 184 100% 47%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer components {
+  /* Gradient card backgrounds - TrackProgenZ colors */
+  .card-gradient-cyan {
+    background: linear-gradient(135deg, hsl(184 100% 47% / 0.2) 0%, hsl(184 100% 47% / 0.05) 100%);
+    border: 1px solid hsl(184 100% 47% / 0.3);
+  }
+  .card-gradient-magenta {
+    background: linear-gradient(135deg, hsl(293 89% 56% / 0.2) 0%, hsl(293 89% 56% / 0.05) 100%);
+    border: 1px solid hsl(293 89% 56% / 0.3);
+  }
+  .card-gradient-purple {
+    background: linear-gradient(135deg, hsl(285 100% 24% / 0.25) 0%, hsl(285 100% 24% / 0.1) 100%);
+    border: 1px solid hsl(285 100% 24% / 0.4);
+  }
+  .card-gradient-green {
+    background: linear-gradient(135deg, hsl(145 100% 45% / 0.2) 0%, hsl(145 100% 45% / 0.05) 100%);
+    border: 1px solid hsl(145 100% 45% / 0.3);
+  }
+  .card-gradient-blue {
+    background: linear-gradient(135deg, hsl(217 91% 60% / 0.2) 0%, hsl(217 91% 60% / 0.05) 100%);
+    border: 1px solid hsl(217 91% 60% / 0.3);
+  }
+  .card-gradient-orange {
+    background: linear-gradient(135deg, hsl(25 95% 53% / 0.2) 0%, hsl(25 95% 53% / 0.05) 100%);
+    border: 1px solid hsl(25 95% 53% / 0.3);
+  }
+  .card-gradient-pink {
+    background: linear-gradient(135deg, hsl(330 81% 60% / 0.2) 0%, hsl(330 81% 60% / 0.05) 100%);
+    border: 1px solid hsl(330 81% 60% / 0.3);
+  }
+
+  /* Main gradient - Cyan to Magenta */
+  .gradient-main {
+    background: linear-gradient(135deg, #00E4F2 0%, #D12BF2 100%);
+  }
+
+  /* Background gradient */
+  .gradient-bg {
+    background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+  }
+
+  /* Logo text gradient - Cyan to Magenta */
+  .logo-gradient {
+    background: linear-gradient(135deg, #00E4F2 0%, #D12BF2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Logo icon gradient */
+  .logo-icon-gradient {
+    background: linear-gradient(135deg, #00E4F2 0%, #D12BF2 100%);
+  }
+
+  /* 3D Letter effect for the T logo */
+  .letter-3d {
+    position: relative;
+    font-weight: 900;
+    color: #00E4F2;
+    text-shadow:
+      0 0 10px rgba(0, 228, 242, 0.8),
+      0 0 20px rgba(0, 228, 242, 0.6),
+      0 0 30px rgba(0, 228, 242, 0.4),
+      0 0 40px rgba(209, 43, 242, 0.4),
+      2px 2px 0 #D12BF2,
+      4px 4px 0 #68007B,
+      6px 6px 0 rgba(104, 0, 123, 0.5);
+  }
+
+  /* Glow effects */
+  .glow-cyan {
+    box-shadow: 0 0 20px rgba(0, 228, 242, 0.4), 0 0 40px rgba(0, 228, 242, 0.2);
+  }
+  .glow-magenta {
+    box-shadow: 0 0 20px rgba(209, 43, 242, 0.4), 0 0 40px rgba(209, 43, 242, 0.2);
+  }
+  .glow-mixed {
+    box-shadow:
+      0 0 20px rgba(0, 228, 242, 0.3),
+      0 0 40px rgba(209, 43, 242, 0.2);
+  }
+
+  /* Button gradient */
+  .btn-gradient {
+    background: linear-gradient(135deg, #00E4F2 0%, #D12BF2 100%);
+    transition: all 0.3s ease;
+  }
+  .btn-gradient:hover {
+    box-shadow: 0 0 25px rgba(0, 228, 242, 0.5), 0 0 50px rgba(209, 43, 242, 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* Input focus style */
+  .input-focus:focus {
+    border-color: #00E4F2;
+    box-shadow: 0 0 0 2px rgba(0, 228, 242, 0.2);
+  }
+
+  /* Success color */
+  .text-success {
+    color: #00E676;
+  }
+
+  /* Animated gradient border */
+  .border-gradient {
+    position: relative;
+    background: linear-gradient(135deg, #1A1A2E, #16213E);
+  }
+  .border-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #00E4F2, #D12BF2);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+}

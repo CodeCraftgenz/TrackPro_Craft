@@ -1,0 +1,229 @@
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
+
+import { PrismaService } from '../../prisma/prisma.service';
+import { UsersService } from '../users/users.service';
+import { LoginDto, RegisterDto, RefreshTokenDto } from './dto/auth.dto';
+
+interface TokenPayload {
+  sub: string;
+  email: string;
+  tenantId?: string;
+  role?: string;
+}
+
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user?: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
+}
+
+@Injectable()
+export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly usersService: UsersService,
+  ) {}
+
+  async register(dto: RegisterDto): Promise<AuthTokens> {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('Email already registered');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 12);
+
+    const user = await this.prisma.user.create({
+      data: {
+        name: dto.name,
+        email: dto.email,
+        passwordHash,
+      },
+    });
+
+    this.logger.log(`User registered: ${user.email}`);
+
+    const tokens = await this.generateTokens(user.id, user.email);
+    return {
+      ...tokens,
+      user: { id: user.id, email: user.email, name: user.name },
+    };
+  }
+
+  async login(dto: LoginDto): Promise<AuthTokens> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    this.logger.log(`User logged in: ${user.email}`);
+
+    const tokens = await this.generateTokens(user.id, user.email);
+    return {
+      ...tokens,
+      user: { id: user.id, email: user.email, name: user.name },
+    };
+  }
+
+  async refreshToken(dto: RefreshTokenDto): Promise<AuthTokens> {
+    const storedToken = await this.prisma.refreshToken.findUnique({
+      where: { token: dto.refreshToken },
+      include: { user: true },
+    });
+
+    if (!storedToken || storedToken.revokedAt) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    if (new Date() > storedToken.expiresAt) {
+      await this.prisma.refreshToken.update({
+        where: { id: storedToken.id },
+        data: { revokedAt: new Date() },
+      });
+      throw new UnauthorizedException('Refresh token expired');
+    }
+
+    // Revoke the old refresh token
+    await this.prisma.refreshToken.update({
+      where: { id: storedToken.id },
+      data: { revokedAt: new Date() },
+    });
+
+    return this.generateTokens(storedToken.user.id, storedToken.user.email);
+  }
+
+  async logout(userId: string, refreshToken?: string): Promise<void> {
+    if (refreshToken) {
+      await this.prisma.refreshToken.updateMany({
+        where: {
+          userId,
+          token: refreshToken,
+          revokedAt: null,
+        },
+        data: { revokedAt: new Date() },
+      });
+    } else {
+      // Revoke all refresh tokens for the user
+      await this.prisma.refreshToken.updateMany({
+        where: {
+          userId,
+          revokedAt: null,
+        },
+        data: { revokedAt: new Date() },
+      });
+    }
+
+    this.logger.log(`User logged out: ${userId}`);
+  }
+
+  private async generateTokens(
+    userId: string,
+    email: string,
+    tenantId?: string,
+    role?: string,
+  ): Promise<AuthTokens> {
+    const payload: TokenPayload = {
+      sub: userId,
+      email,
+    };
+
+    if (tenantId) payload.tenantId = tenantId;
+    if (role) payload.role = role;
+
+    const accessToken = this.jwtService.sign(payload);
+
+    const refreshToken = uuidv4();
+    const refreshExpiresIn = this.configService.get<number>('REFRESH_TOKEN_EXPIRES_DAYS', 7);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + refreshExpiresIn);
+
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId,
+        expiresAt,
+      },
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+      expiresIn: 900, // 15 minutes in seconds
+    };
+  }
+
+  async validateUser(payload: TokenPayload) {
+    return this.usersService.findById(payload.sub);
+  }
+
+  async validateOAuthLogin(profile: {
+    provider: string;
+    providerId: string;
+    email: string;
+    name: string;
+    picture?: string;
+  }): Promise<AuthTokens> {
+    if (!profile.email) {
+      throw new BadRequestException('Email not provided by OAuth provider');
+    }
+
+    // Check if user exists
+    let user = await this.prisma.user.findUnique({
+      where: { email: profile.email },
+    });
+
+    if (!user) {
+      // Create new user from OAuth
+      user = await this.prisma.user.create({
+        data: {
+          email: profile.email,
+          name: profile.name || profile.email.split('@')[0],
+          passwordHash: '', // OAuth users don't have passwords
+          avatarUrl: profile.picture,
+        },
+      });
+
+      this.logger.log(`User registered via ${profile.provider}: ${user.email}`);
+    } else {
+      // Update avatar if not set
+      if (!user.avatarUrl && profile.picture) {
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { avatarUrl: profile.picture },
+        });
+      }
+      this.logger.log(`User logged in via ${profile.provider}: ${user.email}`);
+    }
+
+    return this.generateTokens(user.id, user.email);
+  }
+}

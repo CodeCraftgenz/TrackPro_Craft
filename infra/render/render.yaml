@@ -1,0 +1,171 @@
+# Render Blueprint
+# Deploy all TrackPro services with: render blueprint apply
+
+services:
+  # ============================================
+  # WEB SERVICE - Next.js Frontend
+  # ============================================
+  - type: web
+    name: trackpro-web
+    runtime: node
+    region: oregon
+    plan: starter
+    buildCommand: pnpm install && pnpm build --filter=@trackpro/web
+    startCommand: pnpm --filter=@trackpro/web start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: trackpro-api
+          property: host
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: NEXT_PUBLIC_INGEST_URL
+        fromService:
+          type: web
+          name: trackpro-ingest
+          property: host
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+
+  # ============================================
+  # API SERVICE - NestJS Backend
+  # ============================================
+  - type: web
+    name: trackpro-api
+    runtime: node
+    region: oregon
+    plan: starter
+    buildCommand: pnpm install && pnpm build --filter=@trackpro/api && pnpm --filter=@trackpro/api db:generate
+    startCommand: pnpm --filter=@trackpro/api db:migrate:deploy && pnpm --filter=@trackpro/api start:prod
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: trackpro-web
+          property: host
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: DATABASE_URL
+        fromDatabase:
+          name: trackpro-mysql
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: trackpro-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REFRESH_SECRET
+        generateValue: true
+      - key: HMAC_MASTER_SECRET
+        generateValue: true
+
+  # ============================================
+  # INGEST SERVICE - Event Ingestion (Fastify)
+  # ============================================
+  - type: web
+    name: trackpro-ingest
+    runtime: node
+    region: oregon
+    plan: starter
+    buildCommand: pnpm install && pnpm build --filter=@trackpro/ingest
+    startCommand: pnpm --filter=@trackpro/ingest start:prod
+    healthCheckPath: /v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3002
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: trackpro-redis
+          property: connectionString
+      - key: CLICKHOUSE_HOST
+        sync: false
+      - key: CLICKHOUSE_PORT
+        value: "8443"
+      - key: CLICKHOUSE_DATABASE
+        value: trackpro
+      - key: CLICKHOUSE_USER
+        sync: false
+      - key: CLICKHOUSE_PASSWORD
+        sync: false
+      - key: CLICKHOUSE_PROTOCOL
+        value: https
+      - key: HMAC_MASTER_SECRET
+        fromService:
+          type: web
+          name: trackpro-api
+          envVarKey: HMAC_MASTER_SECRET
+
+  # ============================================
+  # WORKER SERVICE - Background Jobs
+  # ============================================
+  - type: worker
+    name: trackpro-worker
+    runtime: node
+    region: oregon
+    plan: starter
+    buildCommand: pnpm install && pnpm build --filter=@trackpro/worker && pnpm --filter=@trackpro/worker db:generate
+    startCommand: pnpm --filter=@trackpro/worker start:worker
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: trackpro-mysql
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: trackpro-redis
+          property: connectionString
+      - key: CLICKHOUSE_HOST
+        sync: false
+      - key: CLICKHOUSE_PORT
+        value: "8443"
+      - key: CLICKHOUSE_DATABASE
+        value: trackpro
+      - key: CLICKHOUSE_USER
+        sync: false
+      - key: CLICKHOUSE_PASSWORD
+        sync: false
+      - key: CLICKHOUSE_PROTOCOL
+        value: https
+      - key: ENCRYPTION_KEY
+        generateValue: true
+
+  # ============================================
+  # REDIS - Managed Redis
+  # ============================================
+  - type: redis
+    name: trackpro-redis
+    region: oregon
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+databases:
+  # ============================================
+  # MYSQL - Managed Database
+  # ============================================
+  - name: trackpro-mysql
+    region: oregon
+    plan: starter
+    databaseName: trackpro
+    user: trackpro
+
+# Note: ClickHouse Cloud needs to be configured separately
+# as Render doesn't offer managed ClickHouse.
+# Set CLICKHOUSE_* environment variables manually after
+# creating a ClickHouse Cloud instance.
