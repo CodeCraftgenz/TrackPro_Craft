@@ -23,8 +23,14 @@ apps/*/prisma/*.d.ts.map
 .env
 .env.local
 .env.*.local
+.env.*
 !.env.example
+!.env.*.example
 
+
+# Local env managers
+.envrc
+.direnv/
 # IDE
 .idea
 .vscode/*
@@ -58,6 +64,7 @@ apps/api/prisma/*.db-journal
 # Misc
 *.tsbuildinfo
 .cache
+.eslintcache
 .vercel
 .netlify
 
@@ -67,4 +74,12 @@ docker-compose.override.yml
 # Secrets (never commit)
 *.pem
 *.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.csr
+*.der
+*.jks
+*.keystore
 secrets/
